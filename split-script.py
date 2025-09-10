@@ -1,11 +1,13 @@
 import pandas as pd
 from skmultilearn.model_selection import iterative_train_test_split
 
-df = pd.read_csv("GroundTruth2.csv", quotechar='"', sep=';')
-
+df = pd.read_csv("GroundTruth.csv", quotechar='"', sep=';')
 
 # Define columns
-label_cols = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation', 'Neutral']
+label_cols = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation', 'Neutral', 'Reject']
+
+# Filter out rows where Reject is 1
+df = df[df['Reject'] != 1]
 
 # Separate features and labels
 X = df[['sentence']].values
