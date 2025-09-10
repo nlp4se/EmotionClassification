@@ -14,7 +14,7 @@ X = df[['sentence']].values
 y = df[label_cols].values    # Binary multi-label array
 
 # Perform 80-20 multi-label stratified split
-X_train, y_train, X_test, y_test = iterative_train_test_split(X, y, test_size=0.2)
+X_train, y_train, X_test, y_test = iterative_train_test_split(X, y, test_size=0.1)
 
 # Convert back to DataFrames
 train_df = pd.DataFrame(X_train, columns=['sentence'])
