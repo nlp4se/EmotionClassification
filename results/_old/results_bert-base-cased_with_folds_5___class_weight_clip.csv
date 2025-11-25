@@ -1,0 +1,118 @@
+===== Summary per fold =====
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Subset Accuracy (Exact Match),0.0046,0.0450,0.0045,0.0093,0.0000
+Micro Precision,0.2567,0.2953,0.2712,0.2850,0.2954
+Micro Recall,0.9124,0.8480,0.8387,0.8924,0.8920
+Micro F1,0.4007,0.4380,0.4099,0.4320,0.4438
+Macro Precision,0.2178,0.2600,0.1910,0.2175,0.2380
+Macro Recall,0.8352,0.6848,0.5666,0.7416,0.7389
+Macro F1,0.3240,0.3560,0.2701,0.3216,0.3398
+
+===== Per Emotion Metrics per Fold =====
+--- Joy ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.4861,0.4762,0.4311,0.5217,0.5035
+Recall,0.9459,0.9459,0.9730,0.9600,0.9595
+F1,0.6422,0.6335,0.5975,0.6761,0.6605
+Accuracy,0.6438,0.6351,0.5591,0.6776,0.6605
+
+--- Trust ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.2545,0.2248,0.2500,0.2315,0.2308
+Recall,0.9032,0.9667,0.9000,0.8333,0.9677
+F1,0.3972,0.3648,0.3913,0.3623,0.3727
+Accuracy,0.6119,0.5450,0.6182,0.5888,0.5302
+
+--- Fear ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.0600,0.3333,0.0000,0.0000,0.0000
+Recall,0.6000,0.4000,0.0000,0.0000,0.0000
+F1,0.1091,0.3636,0.0000,0.0000,0.0000
+Accuracy,0.7763,0.9685,0.9818,0.9486,0.9442
+
+--- Surprise ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.1158,0.1429,0.1091,0.1316,0.1047
+Recall,1.0000,0.7273,0.6000,0.9091,0.8182
+F1,0.2075,0.2388,0.1846,0.2299,0.1856
+Accuracy,0.6164,0.7703,0.7591,0.6869,0.6326
+
+--- Sadness ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.4828,0.5234,0.4000,0.4711,0.6105
+Recall,0.9180,0.9180,1.0000,0.9500,0.9508
+F1,0.6328,0.6667,0.5714,0.6298,0.7436
+Accuracy,0.7032,0.7477,0.5909,0.6869,0.8140
+
+--- Disgust ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.0962,0.0693,0.2500,0.1096,0.0909
+Recall,1.0000,0.7000,0.2000,0.8000,0.7000
+F1,0.1754,0.1261,0.2222,0.1928,0.1609
+Accuracy,0.5708,0.5631,0.9364,0.6869,0.6605
+
+--- Anger ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.0571,0.1429,0.0000,0.0938,0.1500
+Recall,0.4000,0.2000,0.0000,0.5000,0.6000
+F1,0.1000,0.1667,0.0000,0.1579,0.2400
+Accuracy,0.8356,0.9550,0.9591,0.8505,0.9116
+
+--- Anticipation ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.2869,0.2844,0.1914,0.2449,0.3200
+Recall,0.9722,0.8611,0.8378,1.0000,0.8889
+F1,0.4430,0.4276,0.3116,0.3934,0.4706
+Accuracy,0.5982,0.6261,0.3773,0.4813,0.6651
+
+--- Neutral ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.1207,0.1429,0.0877,0.1529,0.1313
+Recall,0.7778,0.4444,0.5882,0.7222,0.7647
+F1,0.2090,0.2162,0.1527,0.2524,0.2241
+Accuracy,0.5160,0.7387,0.4955,0.6402,0.5814
+
+===== Average Per-Emotion Metrics =====
+Emotion,Precision,Recall,F1,Accuracy
+Joy,0.4837,0.9569,0.6419,0.6352
+Trust,0.2383,0.9142,0.3776,0.5788
+Fear,0.0787,0.2000,0.0945,0.9239
+Surprise,0.1208,0.8109,0.2093,0.6931
+Sadness,0.4975,0.9474,0.6489,0.7085
+Disgust,0.1232,0.6800,0.1755,0.6835
+Anger,0.0887,0.3400,0.1329,0.9024
+Anticipation,0.2655,0.9120,0.4092,0.5496
+Neutral,0.1271,0.6595,0.2109,0.5944
+
+===== Cross-validation Mean Results =====
+Metric,Mean
+Subset Accuracy (Exact Match),0.0127
+Micro Precision,0.2807
+Micro Recall,0.8767
+Micro F1,0.4249
+Macro Precision,0.2248
+Macro Recall,0.7134
+Macro F1,0.3223
+
+===== Class Weights per Emotion =====
+Emotion,Weight
+Joy,0.700000
+Trust,0.700000
+Fear,2.000000
+Surprise,1.629630
+Sadness,0.700000
+Disgust,1.760000
+Anger,2.000000
+Anticipation,0.700000
+Neutral,1.000000
+
+===== Timings =====
+Start timing,2025-11-05 15:11:55.956425
+Class weight calculation time,0:00:00.040396
+Fold 1 time,0:03:11.272291
+Fold 2 time,0:03:13.480317
+Fold 3 time,0:03:06.622554
+Fold 4 time,0:03:01.143384
+Fold 5 time,0:03:28.474522
+Printing results,0:00:00.021354
+Total duration,0:16:01.658006

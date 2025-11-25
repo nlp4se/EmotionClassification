@@ -1,7 +1,7 @@
 import pandas as pd
 from skmultilearn.model_selection import iterative_train_test_split
 
-df = pd.read_csv("GroundTruth.csv", quotechar='"', sep=';')
+df = pd.read_csv("../GroundTruth.csv", quotechar='"', sep=';')
 
 # Define columns
 label_cols = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation', 'Neutral', 'Reject']
