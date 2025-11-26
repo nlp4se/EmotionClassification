@@ -1,0 +1,157 @@
+
+Emotion: Joy
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.8333,0.8462,0.8462,0.7564,0.8205,0.8846,0.8701,0.8961,0.9221,0.8571
+precision,0.7992,0.8154,0.8032,0.3782,0.7565,0.8778,0.8324,0.9069,0.9263,0.8045
+recall,0.7114,0.7377,0.7556,0.5000,0.7565,0.8078,0.8076,0.8072,0.8598,0.8344
+f1,0.7383,0.7641,0.7743,0.4307,0.7565,0.8342,0.8187,0.8422,0.8868,0.8172
+
+Emotion: Trust
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.8974,0.8974,0.8846,0.9231,0.8974,0.9103,0.8312,0.8571,0.8831,0.9221
+precision,0.8349,0.8349,0.8083,0.8923,0.8462,0.8616,0.7301,0.7738,0.8478,0.8918
+recall,0.8349,0.8349,0.8524,0.8508,0.8095,0.8429,0.6930,0.7597,0.7505,0.8505
+f1,0.8349,0.8349,0.8271,0.8694,0.8259,0.8518,0.7081,0.7663,0.7851,0.8690
+
+Emotion: Fear
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.9744,0.9744,0.9615,0.9615,0.9615,0.9615,0.9740,0.9740,0.9740,0.9870
+precision,0.4872,0.4872,0.4808,0.4808,0.4808,0.4808,0.4870,0.4870,0.4870,0.9934
+recall,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.7500
+f1,0.4935,0.4935,0.4902,0.4902,0.4902,0.4902,0.4934,0.4934,0.4934,0.8300
+
+Emotion: Surprise
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.9359,0.9231,0.9231,0.9359,0.9231,0.9231,0.9091,0.9351,0.9481,0.9351
+precision,0.4679,0.6400,0.4615,0.8067,0.4615,0.4615,0.4667,0.4675,0.9737,0.4675
+recall,0.5000,0.5863,0.5000,0.6597,0.5000,0.5000,0.4861,0.5000,0.6000,0.5000
+f1,0.4834,0.6047,0.4800,0.7052,0.4800,0.4800,0.4762,0.4832,0.6532,0.4832
+
+Emotion: Sadness
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.8077,0.8718,0.8974,0.8333,0.8718,0.7821,0.8312,0.8961,0.7922,0.8052
+precision,0.7308,0.9286,0.9053,0.7698,0.8561,0.6832,0.7551,0.8455,0.7237,0.7291
+recall,0.6806,0.7222,0.7972,0.7361,0.7611,0.6250,0.7441,0.8936,0.7679,0.7378
+f1,0.6981,0.7692,0.8349,0.7502,0.7937,0.6400,0.7493,0.8649,0.7381,0.7332
+
+Emotion: Disgust
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.9487,0.9487,0.9359,0.9487,0.9231,0.9359,0.9610,0.9351,0.9351,0.9351
+precision,0.9740,0.8133,0.4679,0.9740,0.4675,0.4679,0.8613,0.4675,0.4675,0.4675
+recall,0.6000,0.6932,0.5000,0.6000,0.4932,0.5000,0.7931,0.5000,0.5000,0.5000
+f1,0.6533,0.7365,0.4834,0.6533,0.4800,0.4834,0.8230,0.4832,0.4832,0.4832
+
+Emotion: Anger
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.9615,0.9615,0.9615,0.9615,0.9615,0.9615,0.9740,0.9740,0.9740,0.9610
+precision,0.4808,0.4808,0.4808,0.4808,0.4808,0.4808,0.4870,0.4870,0.4870,0.4805
+recall,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000,0.5000
+f1,0.4902,0.4902,0.4902,0.4902,0.4902,0.4902,0.4934,0.4934,0.4934,0.4901
+
+Emotion: Anticipation
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.9103,0.9615,0.9231,0.8846,0.9231,0.9615,0.8571,0.9091,0.8961,0.8831
+precision,0.9098,0.9330,0.9205,0.8167,0.8664,0.9508,0.7715,0.8611,0.8422,0.8263
+recall,0.8044,0.9526,0.8357,0.8579,0.9284,0.9294,0.7849,0.8425,0.8422,0.8110
+f1,0.8432,0.9424,0.8694,0.8342,0.8917,0.9396,0.7779,0.8513,0.8422,0.8183
+
+Emotion: Neutral
+,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+accuracy,0.8846,0.8846,0.9103,0.8846,0.8846,0.8974,0.9091,0.9351,0.9091,0.9091
+precision,0.7083,0.6974,0.9539,0.6974,0.6974,0.9481,0.9539,0.8722,0.8339,0.9533
+recall,0.6449,0.5483,0.6111,0.5483,0.5483,0.5556,0.5625,0.7428,0.6593,0.6111
+f1,0.6681,0.5599,0.6577,0.5599,0.5599,0.5726,0.5870,0.7900,0.7059,0.6573
+
+
+===== Timings =====
+Emotion,Fold,Time (s)
+Joy,Fold 1,175.57
+Joy,Fold 2,172.70
+Joy,Fold 3,161.12
+Joy,Fold 4,163.84
+Joy,Fold 5,162.72
+Joy,Fold 6,154.36
+Joy,Fold 7,167.34
+Joy,Fold 8,194.82
+Joy,Fold 9,193.35
+Joy,Fold 10,195.66
+Trust,Fold 1,182.98
+Trust,Fold 2,183.41
+Trust,Fold 3,176.47
+Trust,Fold 4,187.50
+Trust,Fold 5,183.93
+Trust,Fold 6,1150.94
+Trust,Fold 7,159.33
+Trust,Fold 8,155.73
+Trust,Fold 9,147.00
+Trust,Fold 10,154.01
+Fear,Fold 1,170.35
+Fear,Fold 2,160.57
+Fear,Fold 3,159.09
+Fear,Fold 4,157.87
+Fear,Fold 5,155.38
+Fear,Fold 6,156.23
+Fear,Fold 7,153.97
+Fear,Fold 8,156.31
+Fear,Fold 9,155.18
+Fear,Fold 10,157.35
+Surprise,Fold 1,166.54
+Surprise,Fold 2,156.23
+Surprise,Fold 3,159.85
+Surprise,Fold 4,156.45
+Surprise,Fold 5,165.56
+Surprise,Fold 6,160.49
+Surprise,Fold 7,174.38
+Surprise,Fold 8,175.60
+Surprise,Fold 9,173.50
+Surprise,Fold 10,169.39
+Sadness,Fold 1,202.95
+Sadness,Fold 2,186.61
+Sadness,Fold 3,172.72
+Sadness,Fold 4,172.09
+Sadness,Fold 5,172.59
+Sadness,Fold 6,171.00
+Sadness,Fold 7,162.46
+Sadness,Fold 8,153.98
+Sadness,Fold 9,155.90
+Sadness,Fold 10,158.37
+Disgust,Fold 1,176.14
+Disgust,Fold 2,165.11
+Disgust,Fold 3,217.22
+Disgust,Fold 4,179.63
+Disgust,Fold 5,176.76
+Disgust,Fold 6,173.96
+Disgust,Fold 7,175.28
+Disgust,Fold 8,173.12
+Disgust,Fold 9,175.87
+Disgust,Fold 10,160.19
+Anger,Fold 1,170.84
+Anger,Fold 2,154.33
+Anger,Fold 3,156.45
+Anger,Fold 4,156.71
+Anger,Fold 5,157.46
+Anger,Fold 6,156.54
+Anger,Fold 7,159.71
+Anger,Fold 8,163.15
+Anger,Fold 9,160.29
+Anger,Fold 10,161.24
+Anticipation,Fold 1,174.15
+Anticipation,Fold 2,161.84
+Anticipation,Fold 3,178.47
+Anticipation,Fold 4,166.49
+Anticipation,Fold 5,162.79
+Anticipation,Fold 6,161.94
+Anticipation,Fold 7,171.59
+Anticipation,Fold 8,161.18
+Anticipation,Fold 9,155.18
+Anticipation,Fold 10,148.80
+Neutral,Fold 1,169.90
+Neutral,Fold 2,162.03
+Neutral,Fold 3,152.49
+Neutral,Fold 4,148.85
+Neutral,Fold 5,151.90
+Neutral,Fold 6,150.91
+Neutral,Fold 7,151.89
+Neutral,Fold 8,153.70
+Neutral,Fold 9,157.00
+Neutral,Fold 10,154.38
