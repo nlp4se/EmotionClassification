@@ -1,0 +1,55 @@
+===== Summary per fold =====
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Subset Accuracy (Exact Match),0.7559,0.8740,0.8750,0.7578,0.9154
+Micro Precision,0.8707,0.9748,0.9444,0.8165,0.9481
+Micro Recall,0.7537,0.8593,0.8815,0.9556,0.9481
+Micro F1,0.8080,0.9134,0.9119,0.8805,0.9481
+Macro Precision,0.8791,0.9755,0.9495,0.8210,0.9472
+Macro Recall,0.7676,0.8567,0.8789,0.9537,0.9484
+Macro F1,0.8076,0.9120,0.9119,0.8817,0.9477
+
+===== Per Emotion Metrics per Fold =====
+--- Joy ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.9400,0.9706,0.9178,0.7912,0.9589
+Recall,0.6351,0.8800,0.9054,0.9730,0.9459
+F1,0.7581,0.9231,0.9116,0.8727,0.9524
+Accuracy,0.7638,0.9134,0.8984,0.8359,0.9462
+
+--- Sadness ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5
+Precision,0.8182,0.9804,0.9811,0.8507,0.9355
+Recall,0.9000,0.8333,0.8525,0.9344,0.9508
+F1,0.8571,0.9009,0.9123,0.8906,0.9431
+Accuracy,0.8583,0.9134,0.9219,0.8906,0.9462
+
+===== Average Per-Emotion Metrics =====
+Emotion,Precision,Recall,F1,Accuracy
+Joy,0.9157,0.8679,0.8836,0.8715
+Sadness,0.9132,0.8942,0.9008,0.9061
+
+===== Cross-validation Mean Results =====
+Metric,Mean
+Subset Accuracy (Exact Match),0.8356
+Micro Precision,0.9109
+Micro Recall,0.8796
+Micro F1,0.8924
+Macro Precision,0.9144
+Macro Recall,0.8810
+Macro F1,0.8922
+
+===== Class Weights per Emotion =====
+Emotion,Weight
+Joy,0.454178
+Sadness,0.556106
+
+===== Timings =====
+Start timing,2025-11-26 15:52:50.530423
+Class weight calculation time,0:00:00.050480
+Fold 1 time,0:02:21.350317
+Fold 2 time,0:02:09.813550
+Fold 3 time,0:02:33.177192
+Fold 4 time,0:02:06.177456
+Fold 5 time,0:02:12.791782
+Printing results,0:00:00.223025
+Total duration,0:11:26.465923
