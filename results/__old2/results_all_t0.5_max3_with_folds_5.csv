@@ -1,0 +1,119 @@
+===== Summary per fold =====
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Subset Accuracy (Exact Match);0,4640;0,4820;0,4484;0,5022;0,5270
+Micro Precision;0,5766;0,6081;0,5664;0,6413;0,6396
+Micro Recall;0,5141;0,5378;0,5120;0,5652;0,5703
+Micro F1;0,5435;0,5708;0,5378;0,6008;0,6030
+Macro Precision;0,2190;0,3152;0,2972;0,2716;0,3000
+Macro Recall;0,2294;0,2547;0,2416;0,2763;0,2781
+Macro F1;0,2037;0,2299;0,2337;0,2653;0,2713
+Weighted Precision;0,4262;0,5391;0,5019;0,5039;0,5311
+Weighted Recall;0,5141;0,5378;0,5120;0,5652;0,5703
+Weighted F1;0,4354;0,4716;0,4602;0,5210;0,5264
+
+===== Per Emotion Metrics per Fold =====
+--- Joy ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,6038;0,6289;0,5413;0,6632;0,6465
+Recall;0,8649;0,8243;0,7973;0,8400;0,8533
+F1;0,7111;0,7135;0,6448;0,7412;0,7356
+Accuracy;0,7658;0,7793;0,7085;0,8027;0,7928
+
+
+--- Trust ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,0000;1,0000;1,0000;0,4286;0,8182
+Recall;0,0000;0,0323;0,2333;0,2000;0,3000
+F1;0,0000;0,0625;0,3784;0,2727;0,4390
+Accuracy;0,8604;0,8649;0,8969;0,8565;0,8964
+
+
+--- Fear ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,0000;0,0000;0,0000;0,0000;0,0000
+Recall;0,0000;0,0000;0,0000;0,0000;0,0000
+F1;0,0000;0,0000;0,0000;0,0000;0,0000
+Accuracy;0,9775;0,9820;0,9776;0,9776;0,9775
+
+
+--- Surprise ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,0000;0,0000;0,0000;0,0000;0,0000
+Recall;0,0000;0,0000;0,0000;0,0000;0,0000
+F1;0,0000;0,0000;0,0000;0,0000;0,0000
+Accuracy;0,9505;0,9505;0,9507;0,9507;0,9550
+
+
+--- Sadness ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,5098;0,5714;0,5618;0,6190;0,6145
+Recall;0,8667;0,8525;0,8197;0,8525;0,8500
+F1;0,6420;0,6842;0,6667;0,7172;0,7133
+Accuracy;0,7387;0,7838;0,7758;0,8161;0,8153
+
+
+--- Disgust ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,0000;0,0000;0,0000;0,0000;0,0000
+Recall;0,0000;0,0000;0,0000;0,0000;0,0000
+F1;0,0000;0,0000;0,0000;0,0000;0,0000
+Accuracy;0,9550;0,9550;0,9552;0,9552;0,9550
+
+
+--- Anger ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,0000;0,0000;0,0000;0,0000;0,0000
+Recall;0,0000;0,0000;0,0000;0,0000;0,0000
+F1;0,0000;0,0000;0,0000;0,0000;0,0000
+Accuracy;0,9775;0,9730;0,9776;0,9731;0,9775
+
+
+--- Anticipation ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,8571;0,6364;0,5714;0,7333;0,6207
+Recall;0,3333;0,5833;0,3243;0,5946;0,5000
+F1;0,4800;0,6087;0,4138;0,6567;0,5538
+Accuracy;0,8829;0,8784;0,8475;0,8969;0,8694
+
+
+--- Neutral ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,0000;0,0000;0,0000;0,0000;0,0000
+Recall;0,0000;0,0000;0,0000;0,0000;0,0000
+F1;0,0000;0,0000;0,0000;0,0000;0,0000
+Accuracy;0,9234;0,9189;0,9238;0,9193;0,9189
+
+
+===== Average Per-Emotion Metrics =====
+Emotion;Precision;Recall;F1;Accuracy
+Joy;0,6167;0,8360;0,7092;0,7698
+Trust;0,6494;0,1531;0,2305;0,8750
+Fear;0,0000;0,0000;0,0000;0,9784
+Surprise;0,0000;0,0000;0,0000;0,9514
+Sadness;0,5753;0,8483;0,6847;0,7860
+Disgust;0,0000;0,0000;0,0000;0,9550
+Anger;0,0000;0,0000;0,0000;0,9757
+Anticipation;0,6838;0,4671;0,5426;0,8750
+Neutral;0,0000;0,0000;0,0000;0,9209
+
+===== Cross-validation Mean Results =====
+Metric;Mean
+Subset Accuracy (Exact Match);0,4847
+Micro Precision;0,6064
+Micro Recall;0,5399
+Micro F1;0,5712
+Macro Precision;0,2806
+Macro Recall;0,2561
+Macro F1;0,2408
+Weighted Precision;0,5004
+Weighted Recall;0,5399
+Weighted F1;0,4829
+===== Timings =====
+Start timing;2025-12-04 18:43:56.945215
+Fold 1 time;0:03:24.281342
+Fold 2 time;0:03:22.038489
+Fold 3 time;0:03:47.976854
+Fold 4 time;0:03:18.431535
+Fold 5 time;0:03:19.871209
+Printing results;0:00:00.062593
+Total duration;0:17:15.067425

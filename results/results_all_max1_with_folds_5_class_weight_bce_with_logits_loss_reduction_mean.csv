@@ -1,0 +1,113 @@
+###### Summary per fold ######
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Subset Accuracy (Exact Match);0,4910;0,4820;0,4798;0,5022;0,4955
+Micro Precision;0,6081;0,5946;0,5919;0,6143;0,6126
+Micro Recall;0,5422;0,5259;0,5280;0,5415;0,5462
+Micro F1;0,5732;0,5581;0,5581;0,5756;0,5775
+Macro Precision;0,6083;0,5267;0,4017;0,4607;0,3328
+Macro Recall;0,4304;0,3698;0,3454;0,4028;0,3181
+Macro F1;0,4498;0,3802;0,3658;0,4171;0,3162
+Weighted Precision;0,6437;0,6176;0,5604;0,6436;0,5652
+Weighted Recall;0,5422;0,5259;0,5280;0,5415;0,5462
+Weighted F1;0,5549;0,5311;0,5402;0,5795;0,5477
+
+###### Per Emotion Metrics per Fold ######
+--- Joy ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,6588;0,7195;0,6857;0,7344;0,7778
+Recall;0,7568;0,7973;0,6486;0,6267;0,7467
+F1;0,7044;0,7564;0,6667;0,6763;0,7619
+Accuracy;0,7883;0,8288;0,7848;0,7982;0,8423
+
+
+--- Trust ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,5238;0,7500;0,5600;0,5769;0,5882
+Recall;0,3548;0,1935;0,4667;0,5000;0,3333
+F1;0,4231;0,3077;0,5091;0,5357;0,4255
+Accuracy;0,8649;0,8784;0,8789;0,8834;0,8784
+
+
+--- Fear ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,7500;0,2000;0,5000;0,2000;0,0000
+Recall;0,6000;0,2500;0,4000;0,2000;0,0000
+F1;0,6667;0,2222;0,4444;0,2000;0,0000
+Accuracy;0,9865;0,9685;0,9776;0,9641;0,9730
+
+
+--- Surprise ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;1,0000;0,3333;0,2500;0,0833;0,0000
+Recall;0,0909;0,0909;0,0909;0,0909;0,0000
+F1;0,1667;0,1429;0,1333;0,0870;0,0000
+Accuracy;0,9550;0,9459;0,9417;0,9058;0,9505
+
+
+--- Sadness ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,7143;0,7273;0,6406;0,8500;0,6557
+Recall;0,5000;0,5246;0,6721;0,5574;0,6667
+F1;0,5882;0,6095;0,6560;0,6733;0,6612
+Accuracy;0,8108;0,8153;0,8072;0,8520;0,8153
+
+
+--- Disgust ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,3846;0,3333;0,0000;0,5000;0,0000
+Recall;0,5000;0,5000;0,0000;0,2000;0,0000
+F1;0,4348;0,4000;0,0000;0,2857;0,0000
+Accuracy;0,9414;0,9324;0,9462;0,9552;0,9550
+
+
+--- Anger ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,1250;1,0000;0,0000;0,1818;0,1000
+Recall;0,2000;0,1667;0,0000;0,3333;0,2000
+F1;0,1538;0,2857;0,0000;0,2353;0,1333
+Accuracy;0,9505;0,9775;0,9507;0,9417;0,9414
+
+
+--- Anticipation ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,5682;0,4545;0,5789;0,6444;0,5102
+Recall;0,6944;0,6944;0,5946;0,7838;0,6944
+F1;0,6250;0,5495;0,5867;0,7073;0,5882
+Accuracy;0,8649;0,8153;0,8610;0,8924;0,8423
+
+
+--- Neutral ---
+Metric;Fold 1;Fold 2;Fold 3;Fold 4;Fold 5
+Precision;0,7500;0,2222;0,4000;0,3750;0,3636
+Recall;0,1765;0,1111;0,2353;0,3333;0,2222
+F1;0,2857;0,1481;0,2963;0,3529;0,2759
+Accuracy;0,9324;0,8964;0,9148;0,9013;0,9054
+
+
+###### Average Per-Emotion Metrics ######
+Emotion;Precision;Recall;F1;Accuracy
+Joy;0,7152;0,7152;0,7131;0,8085
+Trust;0,5998;0,3697;0,4402;0,8768
+Fear;0,3300;0,2900;0,3067;0,9739
+Surprise;0,3333;0,0727;0,1060;0,9398
+Sadness;0,7176;0,5842;0,6376;0,8201
+Disgust;0,2436;0,2400;0,2241;0,9460
+Anger;0,2814;0,1800;0,1616;0,9523
+Anticipation;0,5513;0,6923;0,6113;0,8552
+Neutral;0,4222;0,2157;0,2718;0,9101
+
+###### Cross-validation Mean Results ######
+Metric;Mean
+Subset Accuracy (Exact Match);0,4901
+Micro Precision;0,6043
+Micro Recall;0,5368
+Micro F1;0,5685
+Macro Precision;0,4660
+Macro Recall;0,3733
+Macro F1;0,3858
+Weighted Precision;0,6061
+Weighted Recall;0,5368
+Weighted F1;0,5507
+
+###### Class Weights per Emotion ######
+Emotion;Weight
