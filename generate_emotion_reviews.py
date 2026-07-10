@@ -15,6 +15,8 @@ import csv
 import argparse
 import requests
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types
 load_dotenv()
 
 # ── Provider configuration ────────────────────────────────────────────────────
@@ -347,7 +349,6 @@ def build_prompt(emotion: str, count: int, definition: str, strategy: str) -> st
 def get_api_key(provider: str) -> str:
     env_var = PROVIDERS[provider]["env_key"]
     api_key = os.environ.get(env_var)
-    print(f"Var: {api_key}")
     if api_key:
         return api_key
     print(f"API key not found for provider '{provider}'. Checked env var: {env_var}")
@@ -402,8 +403,22 @@ def call_openai_compatible(api_key: str, url: str, model: str, messages: list, r
     content = resp.json()["choices"][0]["message"]["content"]
     return json.loads(content)
 
+def strip_additional_properties(schema):
+    """Gemini's responseSchema uses a restricted OpenAPI subset that rejects
+    'additionalProperties', so drop it recursively before sending."""
+    if isinstance(schema, dict):
+        return {
+            k: strip_additional_properties(v)
+            for k, v in schema.items()
+            if k != "additionalProperties"
+        }
+    if isinstance(schema, list):
+        return [strip_additional_properties(v) for v in schema]
+    return schema
+
+
 def call_gemini(api_key: str, model: str, messages: list, response_format: dict, temperature: float) -> dict:
-    schema = response_format["json_schema"]["schema"]
+    schema = strip_additional_properties(response_format["json_schema"]["schema"])
 
     # Gemini doesn't have a system role — prepend it to the first user message
     system_text = next((m["content"] for m in messages if m["role"] == "system"), "")
@@ -414,31 +429,19 @@ def call_gemini(api_key: str, model: str, messages: list, response_format: dict,
         text = m["content"]
         if i == 0 and system_text:
             text = system_text + "\n\n" + text
-        contents.append({
-            "role": m["role"],
-            "parts": [{"text": text}]
-        })
+        contents.append(types.Content(role=m["role"], parts=[types.Part(text=text)]))
 
-    # API key goes as a query param for v1beta generateContent
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-
-    headers = {"Content-Type": "application/json"}
-
-    payload = {
-        "contents": contents,
-        "generationConfig": {
-            "temperature": temperature,
-            "responseMimeType": "application/json",   # flat field, not nested
-            "responseSchema": schema,                  # flat field, not nested
-        },
-    }
-
-    resp = requests.post(url, headers=headers, json=payload)
-    resp.raise_for_status()
-    resp_json = resp.json()
-
-    text = resp_json["candidates"][0]["content"]["parts"][0]["text"]
-    return json.loads(text)
+    client = genai.Client(api_key=api_key)
+    resp = client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=types.GenerateContentConfig(
+            temperature=temperature,
+            response_mime_type="application/json",
+            response_schema=schema,
+        ),
+    )
+    return json.loads(resp.text)
 
 def call_claude(api_key: str, model: str, messages: list, response_format: dict, temperature: float) -> dict:
     schema = response_format["json_schema"]["schema"]
@@ -500,7 +503,6 @@ def generate_batch(provider: str, api_key: str, model: str, emotion: str, count:
 
 # python
 def save_ground_truth(reviews: list, emotion: str, prefix: str) -> None:
-    """Write a new per-run GroundTruth CSV at `Datasets/GroundTruth_<prefix>.csv` (does not overwrite existing file)."""
     os.makedirs("Datasets", exist_ok=True)
     safe_name = os.path.splitext(os.path.basename(prefix))[0]
     gt_path = os.path.join("Datasets", f"{safe_name}.csv")
@@ -528,27 +530,6 @@ def save_ground_truth(reviews: list, emotion: str, prefix: str) -> None:
             writer.writerow(row)
 
     print(f"  Saved GroundTruth: `Datasets/{safe_name}.csv`")
-
-
-def save_outputs(reviews: list, prefix: str, emotion: str) -> None:
-    json_path = f"{prefix}.json"
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(reviews, f, indent=2, ensure_ascii=False)
-    print(f"  Saved JSON: {json_path}")
-
-    csv_path = f"{prefix}.csv"
-    with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, delimiter=";")
-        writer.writerow(["Review", "Sentence", "Emotion"])
-        for item in reviews:
-            rev = (item.get("review") or "").replace("\n", " ").strip()
-            sent = (item.get("sentence") or "").replace("\n", " ").strip()
-            writer.writerow([rev, sent, emotion])
-    print(f"  Saved CSV:  {csv_path}")
-
-    # produce a per-run GroundTruth file without overwriting the existing one
-    save_ground_truth(reviews, emotion, prefix)
-
 
 
 
@@ -604,7 +585,7 @@ def main():
         print(f"\nGenerated {len(reviews)} reviews.")
 
         if reviews:
-            save_outputs(reviews, output_prefix, emotion)
+            save_ground_truth(reviews, emotion, output_prefix)
             print("\nPreview (first 2 reviews):")
             for i, r in enumerate(reviews[:2], 1):
                 print(f"\n[{i}] {r.get('review')}")
