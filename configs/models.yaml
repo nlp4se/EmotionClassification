@@ -98,17 +98,22 @@ decoders:
     provider: Mistral
     api_key_env: MISTRAL_API_KEY
 
-# Generators used for the augmentation-utility analysis and synthetic data creation
+# Generators for RQ4: aliases for the proprietary flagships (must not collide with open-source decoder keys)
 augmentation_generators:
   claude:
     backend: anthropic
-    model_id: claude-sonnet-4-6
+    model_id: claude-opus-4-6
     api_key_env: ANTHROPIC_API_KEY
   gemini:
     backend: gemini
-    model_id: gemini-2.5-flash
+    model_id: gemini-3-flash
     api_key_env: GEMINI_API_KEY
   openai:
     backend: openai
-    model_id: gpt-4o-mini
+    model_id: gpt-5.3-chat
     api_key_env: OPENAI_API_KEY
+  # NOT `mistral` — that key is the open-source Ollama decoder
+  mistral-large:
+    backend: mistral
+    model_id: mistral-large-2512
+    api_key_env: MISTRAL_API_KEY

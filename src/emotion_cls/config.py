@@ -16,6 +16,47 @@ def load_env(dotenv_path: Path | None = None) -> None:
     """Load `.env` from the repo root (or an explicit path)."""
     path = dotenv_path or (REPO_ROOT / ".env")
     load_dotenv(path, override=False)
+    _ensure_writable_hf_cache()
+
+
+def _ensure_writable_hf_cache() -> None:
+    """Prefer a writable Hugging Face cache (shared /data caches are often read-only)."""
+    repo_cache = REPO_ROOT / ".cache" / "huggingface"
+    env_vals = [
+        os.environ.get(k, "")
+        for k in (
+            "HUGGINGFACE_HUB_CACHE",
+            "HF_HUB_CACHE",
+            "HF_HOME",
+            "TRANSFORMERS_CACHE",
+            "SENTENCE_TRANSFORMERS_HOME",
+        )
+    ]
+    shared_prefix = "/data/caches/huggingface"
+    use_repo = any(v.startswith(shared_prefix) for v in env_vals if v)
+    if not use_repo:
+        shared = Path(shared_prefix) / "hub"
+        if shared.exists():
+            # Hub dir may be listable but not creatable for this user
+            try:
+                probe = shared / f".write_probe_{os.getuid()}"
+                probe.write_text("ok")
+                probe.unlink(missing_ok=True)
+            except OSError:
+                use_repo = True
+    if not use_repo:
+        return
+
+    hub = repo_cache / "hub"
+    transformers = repo_cache / "transformers"
+    st = repo_cache / "sentence_transformers"
+    for d in (hub, transformers, st):
+        d.mkdir(parents=True, exist_ok=True)
+    os.environ["HF_HOME"] = str(repo_cache)
+    os.environ["HUGGINGFACE_HUB_CACHE"] = str(hub)
+    os.environ["HF_HUB_CACHE"] = str(hub)
+    os.environ["TRANSFORMERS_CACHE"] = str(transformers)
+    os.environ["SENTENCE_TRANSFORMERS_HOME"] = str(st)
 
 
 def resolve_path(path: str | Path) -> Path:

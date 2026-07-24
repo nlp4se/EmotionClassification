@@ -92,7 +92,13 @@ def load_synthetic_dir(
     """Load synthetic review CSVs under Datasets/{Provider}/{Strategy}/."""
     root = resolve_path(root)
     frames: list[pd.DataFrame] = []
-    provider_map = {"Claude": "Claude", "Gemini": "Gemini", "OpenAi": "GPT", "OpenAI": "GPT"}
+    provider_map = {
+        "Claude": "Claude",
+        "Gemini": "Gemini",
+        "OpenAi": "GPT",
+        "OpenAI": "GPT",
+        "Mistral": "Mistral",
+    }
     strategy_map = {
         "0Shoot": "zero_shot",
         "FewShoot": "few_shot_guidelines",

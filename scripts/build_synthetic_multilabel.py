@@ -16,7 +16,7 @@ from emotion_cls.data.dataset import load_synthetic_dir, synthetic_as_multilabel
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--strategy", default="few_shot_guidelines_dataset")
-    parser.add_argument("--genai", default=None, help="Claude | Gemini | GPT")
+    parser.add_argument("--genai", default=None, help="Claude | Gemini | GPT | Mistral")
     parser.add_argument("--n-per-emotion", type=int, default=None)
     parser.add_argument("--out", default="Datasets/synthetic_multilabel.csv")
     args = parser.parse_args()
