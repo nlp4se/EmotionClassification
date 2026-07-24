@@ -54,9 +54,6 @@ def generate_for_emotion(
 
     strategy = normalize_strategy(strategy or cfg["decoding"]["strategy"])
     spec = decoder_spec(cfg, decoder_key)
-    # Map pilot aliases
-    if decoder_key in cfg.get("_models", {}).get("augmentation_pilot", {}):
-        pass
 
     out_dir = resolve_path(cfg["data"]["synthetic_dir"]) / "generated" / decoder_key / strategy
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -75,7 +72,7 @@ def generate_for_emotion(
 
     while len([r for r in collected]) < (target - human_pos) and need > 0:
         n = min(batch_size, need)
-        messages = generation_messages(emotion, n, strategy)
+        messages = generation_messages(emotion, n, strategy, guidelines_path=cfg["data"].get("guidelines"))
         text = client.chat(messages, temperature=float(cfg.get("augmentation", {}).get("temperature", 0.8)))
         payload = parse_json_payload(text)
         reviews = payload.get("reviews", payload if isinstance(payload, list) else [])

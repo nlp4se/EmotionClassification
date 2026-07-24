@@ -81,7 +81,7 @@ def load_synthetic_dir(
     root: str | Path,
     emotions: list[str],
 ) -> pd.DataFrame:
-    """Load GenAI CSVs under Datasets/{Provider}/{Strategy}/."""
+    """Load synthetic review CSVs under Datasets/{Provider}/{Strategy}/."""
     root = resolve_path(root)
     frames: list[pd.DataFrame] = []
     provider_map = {"Claude": "Claude", "Gemini": "Gemini", "OpenAi": "GPT", "OpenAI": "GPT"}

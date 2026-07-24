@@ -1,4 +1,4 @@
-"""Command-line interface for RQ1–RQ4 experiments."""
+"""Command-line interface for the replication experiments."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def _apply_overrides(cfg: dict, values: dict) -> dict:
 @click.option("--models-config", default="configs/models.yaml", show_default=True)
 @click.pass_context
 def main(ctx: click.Context, config_path: str, models_config: str) -> None:
-    """Emotion classification experiments (IST replication package)."""
+    """Emotion classification replication package."""
     load_env()
     ctx.ensure_object(dict)
     ctx.obj["cfg"] = load_default_config(config_path, models_config)
@@ -78,7 +78,7 @@ def train_encoder(
     epochs: float | None,
     dry_run: bool,
 ) -> None:
-    """RQ1 / RQ3: fine-tune encoder-only models (HF Transformers + PyTorch)."""
+    """Fine-tune encoder-only models (Hugging Face Transformers)."""
     cfg = _apply_overrides(
         ctx.obj["cfg"],
         {
@@ -122,7 +122,7 @@ def classify_decoder(
     folds: int | None,
     dry_run: bool,
 ) -> None:
-    """RQ2: zero/few-shot classification with Ollama or proprietary APIs."""
+    """Zero-/few-shot classification with Ollama or proprietary APIs."""
     cfg = _apply_overrides(
         ctx.obj["cfg"],
         {"decoding.strategy": strategy, "evaluation.n_folds": folds},
@@ -134,7 +134,7 @@ def classify_decoder(
 
 
 @main.command("generate")
-@click.option("--decoder", required=True, help="Generator key (decoder or augmentation_pilot)")
+@click.option("--decoder", required=True, help="Generator key from configs/models.yaml")
 @click.option("--emotion", required=True)
 @click.option("--target-count", type=int, default=None, help="Desired total positives (default: majority parity)")
 @click.option("--batch-size", type=int, default=10)
@@ -152,7 +152,7 @@ def generate(
     batch_size: int,
     strategy: str,
 ) -> None:
-    """RQ4/RQ3: generate synthetic reviews until target count is reached."""
+    """Generate synthetic reviews until a target count is reached."""
     from emotion_cls.augmentation.generate import generate_for_emotion
 
     path = generate_for_emotion(
@@ -194,7 +194,7 @@ def generate_parity(ctx: click.Context, decoder: str, strategy: str, batch_size:
 @main.command("rank-augmentation")
 @click.pass_context
 def rank_augmentation(ctx: click.Context) -> None:
-    """RQ4: MiniLM + Borda ranking of existing synthetic corpora."""
+    """Rank synthetic corpora with embedding-based utility metrics."""
     from emotion_cls.augmentation.utility import rank_augmentation_utility
 
     out = rank_augmentation_utility(ctx.obj["cfg"])
@@ -240,7 +240,7 @@ def predict(ctx: click.Context, model_path: str, input_path: str, output_path: s
 @click.option("--dry-run", is_flag=True)
 @click.pass_context
 def sweep_undersample(ctx: click.Context, encoder: str, cutoffs: str, dry_run: bool) -> None:
-    """RQ3 helper: run multilabel CV for each undersample cutoff bin."""
+    """Undersampling cutoff sweep for multilabel fine-tuning."""
     from emotion_cls.training.encoder import run_multilabel_cv
 
     for cutoff in [int(x) for x in cutoffs.split(",")]:

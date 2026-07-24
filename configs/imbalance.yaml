@@ -1,8 +1,8 @@
-# Imbalance mitigation methods (RQ3).
+# Imbalance mitigation methods.
 
 methods:
   none:
-    description: Baseline (default HF multilabel BCE / binary CE)
+    description: Baseline multilabel BCE / binary CE
   bce_pos_weight:
     description: "BCEWithLogitsLoss + pos_weight[c] = neg_c / pos_c"
   bce_weight:
@@ -16,11 +16,8 @@ methods:
     description: "Cap per-emotion positives at cutoff (bins of 50)"
     cutoff_bins: [50, 100, 150, 200, 250, 300, 350]
   mlsmote:
-    description: "MLSMOTE-style oversampling in MiniLM embedding space (train head / mix)"
+    description: "MLSMOTE-style oversampling in MiniLM embedding space"
     embedder: sentence-transformers/all-MiniLM-L6-v2
   genai_aug:
-    description: "Inject GenAI synthetic positives (bins of 50 up to majority parity)"
+    description: "Inject synthetic positives (bins of 50 up to majority parity)"
     inject_bins: [50, 100, 150, 200, 250, 300, 350]
-
-# Optional combinations expressed as comma-joined method ids in the CLI, e.g.
-# --imbalance undersample,bce_pos_weight

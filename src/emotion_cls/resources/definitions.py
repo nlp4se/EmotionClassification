@@ -1,7 +1,4 @@
-"""Emotion guideline text used for prompting (zero-/few-shot).
-
-Source: annotation guidelines adapted in Motger et al. (What About Emotions?).
-"""
+"""Emotion guideline text used for prompting (zero-/few-shot)."""
 EMOTION_DEFINITIONS_ZERO_SHOOT = {
     "Fear": (
         "Fear expresses stress or anxiety towards an app or a particular event. It implies a sense of agitation, expressing that the user is scared about something."

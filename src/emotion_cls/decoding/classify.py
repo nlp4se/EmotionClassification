@@ -42,13 +42,18 @@ def run_decoder_classification(cfg: dict[str, Any], decoder_key: str, *, dry_run
     seed = int(cfg["project"]["seed"])
     few_k = int(cfg["decoding"].get("few_shot_k", 5))
     temperature = float(cfg["decoding"].get("temperature", 0.0))
+    guidelines_path = cfg["data"].get("guidelines")
+    review_col = cfg["data"].get("review_column", "review")
 
     spec = decoder_spec(cfg, decoder_key)
     out_dir = resolve_path(cfg["project"]["output_dir"]) / "decoder_classify" / decoder_key / strategy
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if dry_run:
-        print(f"[dry-run] decoder classify model={spec['model_id']} backend={spec['backend']} strategy={strategy}")
+        print(
+            f"[dry-run] decoder classify model={spec['model_id']} "
+            f"backend={spec['backend']} strategy={strategy} guidelines={guidelines_path}"
+        )
         return out_dir
 
     client = build_client(spec)
@@ -68,17 +73,29 @@ def run_decoder_classification(cfg: dict[str, Any], decoder_key: str, *, dry_run
 
         preds = np.zeros((len(val_df), len(emotions)), dtype=int)
         rows = []
-        for i, sentence in enumerate(val_df["sentence"].tolist()):
-            messages = classification_messages(sentence, emotions, strategy, few_shot_examples=few)
+        for i in range(len(val_df)):
+            sentence = str(val_df.at[i, "sentence"])
+            review_context = (
+                str(val_df.at[i, review_col])
+                if review_col in val_df.columns
+                else None
+            )
+            messages = classification_messages(
+                sentence,
+                emotions,
+                strategy,
+                few_shot_examples=few,
+                guidelines_path=guidelines_path,
+                review_context=review_context,
+            )
             text = client.chat(messages, temperature=temperature)
             try:
                 payload = parse_json_payload(text)
                 labels = _normalize_labels(payload, emotions, max_labels)
+                rows.append({"sentence": sentence, "pred": labels, "error": "", "raw": ""})
             except Exception as exc:  # noqa: BLE001
                 labels = []
                 rows.append({"sentence": sentence, "pred": [], "error": str(exc), "raw": text[:500]})
-            else:
-                rows.append({"sentence": sentence, "pred": labels, "error": "", "raw": ""})
             for lab in labels:
                 preds[i, emotions.index(lab)] = 1
 

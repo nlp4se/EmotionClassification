@@ -1,4 +1,4 @@
-# Model catalogue aligned with the IST paper (Table: models).
+# Model catalogue.
 
 encoders:
   bert-base-cased:
@@ -98,8 +98,8 @@ decoders:
     provider: Mistral
     api_key_env: MISTRAL_API_KEY
 
-# Generators used in the RQ4 utility pilot (smaller / cheaper than full RQ2 set)
-augmentation_pilot:
+# Generators used for the augmentation-utility analysis and synthetic data creation
+augmentation_generators:
   claude:
     backend: anthropic
     model_id: claude-sonnet-4-6

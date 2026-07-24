@@ -1,9 +1,8 @@
-# Convert existing Datasets/{Provider}/{Strategy} CSVs into one multilabel training CSV
-# for --imbalance genai_aug --synthetic-ml-path ...
+# Convert provider-specific synthetic CSVs into one multilabel CSV for training.
 #
-# Usage (after pip install -e .):
-#   emotion-cls export-run-config   # optional
-#   python scripts/build_synthetic_multilabel.py --strategy few_shot_guidelines_dataset --genai Claude --n-per-emotion 100
+#   python scripts/build_synthetic_multilabel.py \
+#     --strategy few_shot_guidelines_dataset --genai Claude \
+#     --n-per-emotion 100 --out Datasets/synthetic_multilabel.csv
 
 from __future__ import annotations
 

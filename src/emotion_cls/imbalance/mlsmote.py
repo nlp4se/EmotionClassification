@@ -1,11 +1,8 @@
-"""MLSMOTE-style oversampling in embedding space (Charte et al., 2015 inspired).
+"""MLSMOTE-style oversampling in embedding space (Charte et al., 2015).
 
-Because Transformer fine-tuning needs raw text, this module:
-1) embeds minority-supporting instances with MiniLM;
-2) synthesises interpolated embedding vectors + label sets;
-3) returns them for an optional embedding-head training path.
-
-For full encoder fine-tuning, prefer GenAI text augmentation (`genai_aug`).
+Produces synthetic (embedding, label) pairs for optional embedding-space
+training. For end-to-end encoder fine-tuning on text, use generative
+augmentation (`genai_aug`) instead.
 """
 
 from __future__ import annotations

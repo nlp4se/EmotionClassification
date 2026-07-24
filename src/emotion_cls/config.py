@@ -62,7 +62,7 @@ def encoder_hub_id(cfg: dict[str, Any], encoder_key: str) -> str:
 
 def decoder_spec(cfg: dict[str, Any], decoder_key: str) -> dict[str, Any]:
     decoders = cfg.get("_models", {}).get("decoders", {})
-    pilots = cfg.get("_models", {}).get("augmentation_pilot", {})
+    pilots = cfg.get("_models", {}).get("augmentation_generators", {})
     if decoder_key in decoders:
         return dict(decoders[decoder_key])
     if decoder_key in pilots:

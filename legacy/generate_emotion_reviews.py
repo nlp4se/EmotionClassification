@@ -493,7 +493,7 @@ def generate_batch(provider: str, api_key: str, model: str, emotion: str, count:
     print(f"Batch mode: generating all {count} reviews in a single API call...")
     prompt = build_prompt(emotion, count, definition, strategy)
     messages = [
-        {"role": "system", "content": "You are a helpful assistant that outputs app reviews in JSON format matching the requested schema."},
+        {"role": "system", "content": "You generate mobile app reviews as JSON matching the requested schema."},
         {"role": "user", "content": prompt},
     ]
     result = call_api(provider, api_key, model, messages, batch_response_format(emotion, count), temperature=1.0)

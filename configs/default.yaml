@@ -1,4 +1,4 @@
-# Default experiment settings (IST Emotion Classification paper).
+# Default experiment settings.
 
 project:
   seed: 42
@@ -8,8 +8,9 @@ project:
 data:
   ground_truth: Datasets/GroundTruth.csv
   synthetic_dir: Datasets
+  guidelines: Datasets/guidelines/Annotation Guidelines.txt
   text_column: sentence
-  # Plutchik + Neutral; Reject dropped
+  review_column: review
   emotions:
     - Joy
     - Trust
@@ -20,7 +21,7 @@ data:
     - Anger
     - Anticipation
     - Neutral
-  generation_emotions:  # Neutral is not a generation target
+  generation_emotions:
     - Joy
     - Trust
     - Fear
@@ -46,7 +47,7 @@ evaluation:
 
 training:
   encoder: bert-base-cased
-  head: multilabel          # multilabel | binary
+  head: multilabel
   epochs: 3
   learning_rate: 2.0e-5
   train_batch_size: 8
@@ -59,20 +60,21 @@ training:
   early_stopping_patience: 2
 
 imbalance:
-  method: none              # see configs/imbalance.yaml
+  method: none
   reduction: mean
   focal_gamma: 2.0
-  undersample_cutoff: null  # e.g. 150; sweep {50,100,150,...}
-  aug_inject_n: null        # synthetic positives per emotion; bins of 50
-  synthetic_source: null    # path or provider key used for GenAI rows
+  undersample_cutoff: null
+  aug_inject_n: null
+  synthetic_ml_path: null
 
 decoding:
   temperature: 0.0
-  strategy: zero_shot       # zero_shot | few_shot_guidelines | few_shot_guidelines_dataset
+  strategy: zero_shot
   few_shot_k: 5
 
 augmentation:
   embedder: sentence-transformers/all-MiniLM-L6-v2
-  pilot_n_per_cell: 20
+  sample_n_per_cell: 20
   default_generator: claude
   default_strategy: few_shot_guidelines_dataset
+  temperature: 0.8

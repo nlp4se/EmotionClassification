@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "emotion-cls"
 version = "0.1.0"
-description = "Replication package: LLM-based fine-grained emotion classification of mobile app reviews"
+description = "Replication package for multi-label emotion classification of mobile app reviews"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
