@@ -13,9 +13,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def load_env(dotenv_path: Path | None = None) -> None:
-    """Load `.env` from the repo root (or an explicit path)."""
+    """Load `.env` from the repo root (or an explicit path).
+
+    Uses ``override=True`` so a corrected key in `.env` wins over a stale
+    value already in the process environment (common with long-running
+    nohup jobs that called ``load_env`` before `.env` was fixed).
+    """
     path = dotenv_path or (REPO_ROOT / ".env")
-    load_dotenv(path, override=False)
+    load_dotenv(path, override=True)
     _ensure_writable_hf_cache()
 
 

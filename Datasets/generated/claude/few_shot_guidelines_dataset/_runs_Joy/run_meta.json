@@ -1,0 +1,123 @@
+{
+  "run_id": "611532ef-ac1d-40c0-a5cd-09989c21026f",
+  "name": "generate:claude:few_shot_guidelines_dataset:Joy",
+  "started_at": "2026-07-24T19:17:36.631265+00:00",
+  "repo_root": "/home/quim-motger/EmotionClassification",
+  "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "config": {
+    "project": {
+      "seed": 42,
+      "output_dir": "outputs",
+      "models_dir": "models"
+    },
+    "data": {
+      "ground_truth": "Datasets/GroundTruth.csv",
+      "synthetic_dir": "Datasets",
+      "guidelines": "Datasets/guidelines/Annotation Guidelines.txt",
+      "text_column": "sentence",
+      "review_column": "review",
+      "emotions": [
+        "Joy",
+        "Trust",
+        "Fear",
+        "Surprise",
+        "Sadness",
+        "Disgust",
+        "Anger",
+        "Anticipation",
+        "Neutral"
+      ],
+      "generation_emotions": [
+        "Joy",
+        "Trust",
+        "Fear",
+        "Surprise",
+        "Sadness",
+        "Disgust",
+        "Anger",
+        "Anticipation",
+        "Neutral"
+      ]
+    },
+    "evaluation": {
+      "n_folds": 10,
+      "max_labels": 3,
+      "metrics": [
+        "precision",
+        "recall",
+        "f1"
+      ],
+      "averages": [
+        "micro",
+        "macro",
+        "weighted"
+      ],
+      "subset_accuracy": true,
+      "primary_metric": "macro_f1"
+    },
+    "training": {
+      "encoder": "bert-base-cased",
+      "head": "multilabel",
+      "epochs": 3,
+      "learning_rate": 2e-05,
+      "train_batch_size": 8,
+      "eval_batch_size": 16,
+      "max_length": 512,
+      "weight_decay": 0.01,
+      "warmup_ratio": 0.0,
+      "gradient_accumulation_steps": 1,
+      "fp16": false,
+      "early_stopping_patience": 2
+    },
+    "imbalance": {
+      "method": "none",
+      "reduction": "mean",
+      "focal_gamma": 2.0,
+      "undersample_cutoff": null,
+      "aug_inject_n": null,
+      "synthetic_ml_path": null
+    },
+    "decoding": {
+      "temperature": 0.0,
+      "temperature_grid": [
+        0.0,
+        0.3,
+        0.7
+      ],
+      "strategy": "zero_shot",
+      "few_shot_k": 5
+    },
+    "augmentation": {
+      "embedder": "sentence-transformers/all-MiniLM-L6-v2",
+      "sample_n_per_cell": 20,
+      "default_generator": "claude",
+      "default_strategy": "few_shot_guidelines_dataset",
+      "temperature": 0.8
+    },
+    "experiment": {
+      "resume": true,
+      "flush_every": 1,
+      "ollama_pull_if_missing": true,
+      "ollama_remove_after_use": false
+    }
+  },
+  "extra": {
+    "emotion": "Joy",
+    "decoder": "claude",
+    "strategy": "few_shot_guidelines_dataset",
+    "target": 371,
+    "human_pos": 371,
+    "output": "/home/quim-motger/EmotionClassification/Datasets/generated/claude/few_shot_guidelines_dataset/generated_claude_joy_reviews_few_shot_guidelines_dataset.csv"
+  },
+  "finished_at": "2026-07-24T19:17:36.849463+00:00",
+  "status": "completed",
+  "usage_totals": {
+    "prompt_tokens": null,
+    "completion_tokens": null,
+    "total_tokens": null,
+    "total_latency_ms": 0.0,
+    "n_llm_calls": 0
+  },
+  "reason": "already_at_target"
+}

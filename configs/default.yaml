@@ -88,3 +88,7 @@ experiment:
   resume: true
   # Flush decoder predictions after every sentence (safest for crashes).
   flush_every: 1
+  # Ollama lifecycle (open-source decoders): pull if missing; remove only when requested
+  # via --unload-ollama or ollama_remove_after_use: true (avoids re-pulling mid-sweep).
+  ollama_pull_if_missing: true
+  ollama_remove_after_use: false

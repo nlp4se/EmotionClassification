@@ -137,6 +137,11 @@ def train_encoder(
 @click.option("--folds", type=int, default=None)
 @click.option("--dry-run", is_flag=True)
 @click.option("--no-resume", is_flag=True, help="Ignore saved predictions and re-run from scratch")
+@click.option(
+    "--unload-ollama",
+    is_flag=True,
+    help="After this run, ollama stop+rm the model (free disk/VRAM). Use on the last sweep cell per model.",
+)
 @click.pass_context
 def classify_decoder(
     ctx: click.Context,
@@ -146,6 +151,7 @@ def classify_decoder(
     folds: int | None,
     dry_run: bool,
     no_resume: bool,
+    unload_ollama: bool,
 ) -> None:
     """Zero-/few-shot classification with Ollama or proprietary APIs."""
     cfg = _apply_overrides(
@@ -160,7 +166,9 @@ def classify_decoder(
     from emotion_cls.decoding.classify import run_decoder_classification
 
     resume = bool(cfg.get("experiment", {}).get("resume", True)) and not no_resume
-    out = run_decoder_classification(cfg, decoder, dry_run=dry_run, resume=resume)
+    out = run_decoder_classification(
+        cfg, decoder, dry_run=dry_run, resume=resume, unload_ollama=unload_ollama or None
+    )
     click.echo(f"Output: {out}")
 
 

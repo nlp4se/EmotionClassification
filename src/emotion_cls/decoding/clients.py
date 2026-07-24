@@ -119,7 +119,7 @@ class AnthropicClient(LLMClient):
         key = os.environ.get(api_key_env) or os.environ.get("CLAUDE_API_KEY")
         if not key:
             raise RuntimeError(f"Missing API key: set {api_key_env} or CLAUDE_API_KEY in .env")
-        self.api_key = key
+        self.api_key = key.strip()
         self.url = "https://api.anthropic.com/v1/messages"
 
     def chat(self, messages: list[dict[str, str]], *, temperature: float = 0.0) -> ChatResult:

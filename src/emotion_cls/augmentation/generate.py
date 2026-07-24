@@ -127,6 +127,13 @@ def generate_for_emotion(
         except Exception as exc:  # noqa: BLE001
             run.log_event("generate_batch_error", emotion=emotion, error=str(exc))
             print(f"  batch error: {exc}; retrying...")
+            msg = str(exc).lower()
+            # Do not spin forever on auth / permission failures
+            if any(x in msg for x in ("401", "403", "unauthorized", "invalid api key", "authentication")):
+                run.finalize(status="failed", error=str(exc))
+                raise RuntimeError(
+                    f"Fatal auth/permission error while generating {emotion}: {exc}"
+                ) from exc
             continue
 
         added = 0
