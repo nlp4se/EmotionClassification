@@ -128,6 +128,12 @@ def train_encoder(
     type=click.Choice(["zero_shot", "few_shot_guidelines", "few_shot_guidelines_dataset"]),
     default=None,
 )
+@click.option(
+    "--temperature",
+    type=float,
+    default=None,
+    help="Decoding temperature (tuned factor for RQ2; default from configs/default.yaml)",
+)
 @click.option("--folds", type=int, default=None)
 @click.option("--dry-run", is_flag=True)
 @click.option("--no-resume", is_flag=True, help="Ignore saved predictions and re-run from scratch")
@@ -136,6 +142,7 @@ def classify_decoder(
     ctx: click.Context,
     decoder: str,
     strategy: str | None,
+    temperature: float | None,
     folds: int | None,
     dry_run: bool,
     no_resume: bool,
@@ -145,6 +152,7 @@ def classify_decoder(
         ctx.obj["cfg"],
         {
             "decoding.strategy": strategy,
+            "decoding.temperature": temperature,
             "evaluation.n_folds": folds,
             "experiment.resume": False if no_resume else None,
         },

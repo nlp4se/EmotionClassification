@@ -70,6 +70,8 @@ imbalance:
 
 decoding:
   temperature: 0.0
+  # Candidate temperatures for RQ2 sensitivity / tuning sweeps
+  temperature_grid: [0.0, 0.3, 0.7]
   strategy: zero_shot
   few_shot_k: 5
 

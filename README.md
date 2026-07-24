@@ -66,9 +66,15 @@ Prompting strategies: `zero_shot`, `few_shot_guidelines`, `few_shot_guidelines_d
 Prompts are built from `Datasets/guidelines/Annotation Guidelines.txt` (the official annotation guidelines).
 
 ```bash
-emotion-cls classify-decoder --decoder gemma3-27b --strategy zero_shot
+emotion-cls classify-decoder --decoder gemma3-4b --strategy zero_shot
+emotion-cls classify-decoder --decoder gemma3-4b --strategy zero_shot --temperature 0.3
 emotion-cls classify-decoder --decoder claude-opus-4-6 --strategy few_shot_guidelines_dataset
 ```
+
+Temperature is a tunable RQ2 factor (`--temperature`; default `0.0` from `configs/default.yaml`).
+Grid candidates are listed under `decoding.temperature_grid` (`0.0`, `0.3`, `0.7`).
+Each temperature writes to its own resumable directory
+`outputs/decoder_classify/<decoder>/<strategy>/t<temp>/`.
 
 ### Data-imbalance mitigation
 
@@ -161,7 +167,7 @@ Force a clean re-run with `--no-resume`.
 
 ```bash
 emotion-cls train-encoder --encoder bert-base-cased --head multilabel
-emotion-cls classify-decoder --decoder gemma3-27b --strategy zero_shot
+emotion-cls classify-decoder --decoder gemma3-4b --strategy zero_shot
 # after a crash, the same commands continue where they left off
 ```
 

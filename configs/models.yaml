@@ -40,37 +40,37 @@ encoders:
     size: large
 
 decoders:
-  # Open-source via Ollama (local)
-  llama4-scout:
-    backend: ollama
-    model_id: llama4:scout
-    access: open-source
-    provider: Meta
-  gemma3-27b:
-    backend: ollama
-    model_id: gemma3:27b
-    access: open-source
-    provider: Google
-  qwen3-30b:
-    backend: ollama
-    model_id: qwen3:30b-a3b
-    access: open-source
-    provider: Alibaba
-  gpt-oss-20b:
-    backend: ollama
-    model_id: gpt-oss:20b
-    access: open-source
-    provider: OpenAI
-  mistral-small3.1-24b:
-    backend: ollama
-    model_id: mistral-small3.1:24b
-    access: open-source
-    provider: Mistral
+  # Open-source via Ollama (local) — keys match `ollama list` on the experiment host
   deepseek-r1-8b:
     backend: ollama
     model_id: deepseek-r1:8b
     access: open-source
     provider: DeepSeek
+  mistral:
+    backend: ollama
+    model_id: mistral:latest
+    access: open-source
+    provider: Mistral
+  gpt-oss-20b:
+    backend: ollama
+    model_id: gpt-oss:20b
+    access: open-source
+    provider: OpenAI
+  gemma3-4b:
+    backend: ollama
+    model_id: gemma3:4b
+    access: open-source
+    provider: Google
+  llama3.1-8b:
+    backend: ollama
+    model_id: llama3.1:8b
+    access: open-source
+    provider: Meta
+  qwen3-8b:
+    backend: ollama
+    model_id: qwen3:8b
+    access: open-source
+    provider: Alibaba
 
   # Proprietary via official APIs
   gpt-5.3-chat:

@@ -109,21 +109,35 @@ def run_decoder_classification(
     resume = bool(cfg.get("experiment", {}).get("resume", resume))
 
     spec = decoder_spec(cfg, decoder_key)
-    out_dir = resolve_path(cfg["project"]["output_dir"]) / "decoder_classify" / decoder_key / strategy
+    # Isolate temperature in the output path so sweeps are independently resumable
+    temp_tag = f"t{temperature:g}"
+    out_dir = (
+        resolve_path(cfg["project"]["output_dir"])
+        / "decoder_classify"
+        / decoder_key
+        / strategy
+        / temp_tag
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
 
     run = ExperimentRun(
         out_dir,
-        name=f"decoder_classify:{decoder_key}:{strategy}",
+        name=f"decoder_classify:{decoder_key}:{strategy}:{temp_tag}",
         cfg=cfg,
         resume=resume,
-        extra_meta={"decoder": decoder_key, "strategy": strategy, "model": spec},
+        extra_meta={
+            "decoder": decoder_key,
+            "strategy": strategy,
+            "temperature": temperature,
+            "model": spec,
+        },
     )
 
     if dry_run:
         print(
             f"[dry-run] decoder classify model={spec['model_id']} "
-            f"backend={spec['backend']} strategy={strategy} guidelines={guidelines_path}"
+            f"backend={spec['backend']} strategy={strategy} temperature={temperature} "
+            f"guidelines={guidelines_path}"
         )
         run.finalize(status="dry_run")
         return out_dir
