@@ -30,13 +30,21 @@ def load_ground_truth(
     *,
     emotions: list[str] | None = None,
     text_column: str = "sentence",
+    drop_reject: bool = True,
 ) -> pd.DataFrame:
-    """Load the human ground-truth CSV (semicolon-separated)."""
+    """Load the human ground-truth CSV (semicolon-separated).
+
+    By default drops rows with Reject=1, matching the experimental protocol
+    (Reject is unused as a prediction target).
+    """
     emotions = emotions or DEFAULT_EMOTIONS
     df = pd.read_csv(resolve_path(path), sep=";", dtype=str)
     df.columns = [c.strip() for c in df.columns]
     if text_column not in df.columns:
         raise KeyError(f"Missing text column '{text_column}' in {path}")
+    if drop_reject and "Reject" in df.columns:
+        reject = pd.to_numeric(df["Reject"], errors="coerce").fillna(0).astype(int)
+        df = df.loc[reject == 0].reset_index(drop=True)
     for e in emotions:
         if e not in df.columns:
             raise KeyError(f"Missing emotion column '{e}' in {path}")

@@ -137,6 +137,34 @@ emotion-cls predict \
 emotion-cls export-run-config --out outputs/resolved_config.yaml
 ```
 
+## Experiment logging and resume
+
+Runs are **resumable by default** (`experiment.resume: true` in `configs/default.yaml`).
+Re-executing the same command skips finished work and continues from the last checkpoint.
+
+| Experiment | Resume unit | Periodic flush |
+|------------|-------------|----------------|
+| Encoder multilabel | completed `fold_N/metrics.json` | after each fold (+ HF epoch checkpoints) |
+| Encoder binary | fold metrics; within fold, `probs.npy` / `emotions_done.json` per emotion | after each emotion |
+| Decoder classify | fold metrics; within fold, per-sentence `predictions.csv` | after **every** sentence |
+| Generation | existing synthetic CSV row count | after every batch |
+| Undersample sweep | per-cutoff directory `undersample_c<N>/` | same as encoder |
+
+Each run directory also stores:
+
+- `run_meta.json` — config snapshot, start/end timestamps, run id  
+- `events.jsonl` — append-only event log (fold start/done, LLM calls, errors)  
+- `progress.json` — completed folds/units  
+- `usage_totals.json` — aggregated prompt/completion tokens and latency (API / Ollama)
+
+Force a clean re-run with `--no-resume`.
+
+```bash
+emotion-cls train-encoder --encoder bert-base-cased --head multilabel
+emotion-cls classify-decoder --decoder gemma3-27b --strategy zero_shot
+# after a crash, the same commands continue where they left off
+```
+
 ## Licence and citation
 
 Please cite the associated publication when using this package, and the ground-truth dataset paper:

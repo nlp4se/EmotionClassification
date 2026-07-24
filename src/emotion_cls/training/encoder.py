@@ -1,8 +1,13 @@
-"""Hugging Face + PyTorch fine-tuning for encoder-only emotion classifiers."""
+"""Hugging Face + PyTorch fine-tuning for encoder-only emotion classifiers.
+
+Resumable at fold granularity (and per-emotion within binary ensemble folds).
+Completed ``fold_N/metrics.json`` files are skipped on re-run.
+"""
 
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -21,12 +26,12 @@ from transformers import (
 
 from emotion_cls.config import encoder_hub_id, resolve_path
 from emotion_cls.data.dataset import (
-    inject_synthetic,
     label_matrix,
     load_ground_truth,
     multilabel_folds,
 )
-from emotion_cls.imbalance.sampling import undersample_multilabel
+from emotion_cls.experiment import ExperimentRun, timed
+from emotion_cls.imbalance.sampling import inject_synthetic, undersample_multilabel
 from emotion_cls.losses import build_loss
 from emotion_cls.training.metrics import compute_metrics, top_k_from_logits
 
@@ -67,7 +72,12 @@ def _tokenize_dataset(df: pd.DataFrame, emotions: list[str], tokenizer, max_leng
     return ds.map(tok, batched=True, remove_columns=["text"])
 
 
-def run_multilabel_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[FoldResult]:
+def run_multilabel_cv(
+    cfg: dict[str, Any],
+    *,
+    dry_run: bool = False,
+    resume: bool = True,
+) -> list[FoldResult]:
     emotions = cfg["data"]["emotions"]
     df = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
     y = label_matrix(df, emotions)
@@ -78,30 +88,77 @@ def run_multilabel_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[Fol
     imb = cfg.get("imbalance", {})
     method = str(imb.get("method", "none"))
     methods = [m.strip() for m in method.split(",") if m.strip()]
+    resume = bool(cfg.get("experiment", {}).get("resume", resume))
+    # Allow filesystem tags like undersample_c150 / genai_aug_n100
+    methods_norm = []
+    for m in methods:
+        if m.startswith("undersample"):
+            methods_norm.append("undersample")
+        elif m.startswith("genai_aug"):
+            methods_norm.append("genai_aug")
+        else:
+            methods_norm.append(m)
 
-    # Optional preloaded synthetic multilabel frame
     synthetic_ml = None
-    if "genai_aug" in methods and imb.get("synthetic_ml_path"):
-        synthetic_ml = pd.read_csv(resolve_path(imb["synthetic_ml_path"]), sep=";")
+    if "genai_aug" in methods_norm:
+        synth_path = imb.get("synthetic_ml_path")
+        if not synth_path:
+            raise ValueError(
+                "imbalance method 'genai_aug' requires --synthetic-ml-path "
+                "(build it with scripts/build_synthetic_multilabel.py)."
+            )
+        synthetic_ml = pd.read_csv(resolve_path(synth_path), sep=";")
 
-    tokenizer = AutoTokenizer.from_pretrained(hub_id)
-    results: list[FoldResult] = []
-    out_dir = resolve_path(cfg["project"]["output_dir"]) / "encoder_multilabel" / cfg["training"]["encoder"] / method.replace(",", "+")
+    if "mlsmote" in methods_norm:
+        raise ValueError(
+            "MLSMOTE is implemented (embedding-space) but not wired into the HF text Trainer yet. "
+            "Omit 'mlsmote' from --imbalance for now."
+        )
+
+    out_dir = (
+        resolve_path(cfg["project"]["output_dir"])
+        / "encoder_multilabel"
+        / cfg["training"]["encoder"]
+        / method.replace(",", "+")
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    run = ExperimentRun(
+        out_dir,
+        name=f"encoder_multilabel:{cfg['training']['encoder']}:{method}",
+        cfg=cfg,
+        resume=resume,
+        extra_meta={"hub_id": hub_id, "imbalance": methods},
+    )
 
     if dry_run:
         print(f"[dry-run] multilabel CV encoder={hub_id} folds={n_folds} imbalance={methods} n={len(df)}")
-        return results
+        run.finalize(status="dry_run")
+        return []
+
+    tokenizer = AutoTokenizer.from_pretrained(hub_id)
+    results: list[FoldResult] = []
 
     for fold, (train_idx, val_idx) in enumerate(multilabel_folds(y, n_folds, seed), start=1):
+        fold_dir = out_dir / f"fold_{fold}"
+
+        if run.fold_done(fold):
+            metrics = run.load_fold_metrics(fold)
+            if metrics:
+                clean = {k: v for k, v in metrics.items() if k != "_meta"}
+                results.append(FoldResult(fold=fold, metrics=clean))
+                print(f"[resume] skip fold {fold}")
+                _write_cv_summary(results, out_dir / "cv_summary.json", emotions, run=run)
+                continue
+
         train_df = df.iloc[train_idx].reset_index(drop=True)
         val_df = df.iloc[val_idx].reset_index(drop=True)
 
-        if "undersample" in methods and imb.get("undersample_cutoff"):
+        if "undersample" in methods_norm and imb.get("undersample_cutoff"):
             train_df = undersample_multilabel(
                 train_df, emotions, int(imb["undersample_cutoff"]), seed=seed + fold
             )
-        if "genai_aug" in methods and synthetic_ml is not None:
+        if "genai_aug" in methods_norm and synthetic_ml is not None:
             train_df = inject_synthetic(
                 train_df,
                 synthetic_ml,
@@ -110,7 +167,14 @@ def run_multilabel_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[Fol
             )
 
         y_train = torch.tensor(label_matrix(train_df, emotions), dtype=torch.float32)
-        loss_name = next((m for m in methods if m in {"none", "bce_pos_weight", "bce_weight", "focal", "adaptive_focal"}), "none")
+        loss_name = next(
+            (
+                m
+                for m in methods_norm
+                if m in {"none", "bce_pos_weight", "bce_weight", "focal", "adaptive_focal"}
+            ),
+            "none",
+        )
         loss_fn = build_loss(
             loss_name,
             y_train,
@@ -126,7 +190,7 @@ def run_multilabel_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[Fol
         train_ds = _tokenize_dataset(train_df, emotions, tokenizer, int(cfg["training"]["max_length"]))
         val_ds = _tokenize_dataset(val_df, emotions, tokenizer, int(cfg["training"]["max_length"]))
 
-        fold_dir = out_dir / f"fold_{fold}"
+        fold_dir.mkdir(parents=True, exist_ok=True)
         args = TrainingArguments(
             output_dir=str(fold_dir),
             num_train_epochs=float(cfg["training"]["epochs"]),
@@ -154,6 +218,8 @@ def run_multilabel_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[Fol
                 "subset_accuracy": m["subset_accuracy"],
             }
 
+        run.log_event("fold_started", fold=fold, n_train=len(train_df), n_val=len(val_df))
+        t0 = timed()
         trainer = MultilabelTrainer(
             model=model,
             args=args,
@@ -162,40 +228,76 @@ def run_multilabel_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[Fol
             tokenizer=tokenizer,
             compute_metrics=hf_metrics,
             loss_fn=loss_fn,
-            callbacks=[EarlyStoppingCallback(early_stopping_patience=int(cfg["training"].get("early_stopping_patience", 2)))],
+            callbacks=[
+                EarlyStoppingCallback(
+                    early_stopping_patience=int(cfg["training"].get("early_stopping_patience", 2))
+                )
+            ],
         )
         trainer.train()
         pred_out = trainer.predict(val_ds)
         preds = top_k_from_logits(pred_out.predictions, k=max_labels)
         metrics = compute_metrics(label_matrix(val_df, emotions), preds, emotions)
-        results.append(FoldResult(fold=fold, metrics=metrics))
-        with open(fold_dir / "metrics.json", "w", encoding="utf-8") as f:
-            json.dump(metrics, f, indent=2)
+        elapsed = timed() - t0
 
-    _write_cv_summary(results, out_dir / "cv_summary.json", emotions)
+        # Persist predictions for audit
+        pred_rows = []
+        for i, sent in enumerate(val_df["sentence"].tolist()):
+            labs = [emotions[j] for j, v in enumerate(preds[i]) if v == 1]
+            pred_rows.append({"idx": i, "sentence": sent, "pred": json.dumps(labs)})
+        pd.DataFrame(pred_rows).to_csv(fold_dir / "predictions.csv", index=False)
+
+        results.append(FoldResult(fold=fold, metrics=metrics))
+        run.mark_fold_done(fold, metrics, elapsed_s=elapsed)
+        _write_cv_summary(results, out_dir / "cv_summary.json", emotions, run=run)
+        print(f"fold {fold} done in {elapsed:.1f}s macro_f1={metrics['macro_f1']:.4f}")
+
+    run.finalize(status="completed", n_folds=len(results))
     return results
 
 
-def run_binary_ensemble_cv(cfg: dict[str, Any], *, dry_run: bool = False) -> list[dict[str, Any]]:
+def run_binary_ensemble_cv(
+    cfg: dict[str, Any],
+    *,
+    dry_run: bool = False,
+    resume: bool = True,
+) -> list[dict[str, Any]]:
     """Train one binary classifier per emotion on shared multilabel folds; assemble with top-k."""
     emotions = cfg["data"]["emotions"]
     df = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
     hub_id = encoder_hub_id(cfg, cfg["training"]["encoder"])
-    tokenizer = AutoTokenizer.from_pretrained(hub_id)
     out_dir = resolve_path(cfg["project"]["output_dir"]) / "encoder_binary" / cfg["training"]["encoder"]
     out_dir.mkdir(parents=True, exist_ok=True)
+    resume = bool(cfg.get("experiment", {}).get("resume", resume))
+
+    run = ExperimentRun(
+        out_dir,
+        name=f"encoder_binary:{cfg['training']['encoder']}",
+        cfg=cfg,
+        resume=resume,
+        extra_meta={"hub_id": hub_id},
+    )
 
     if dry_run:
         print(f"[dry-run] binary ensemble encoder={hub_id} folds={cfg['evaluation']['n_folds']} n={len(df)}")
+        run.finalize(status="dry_run")
         return []
 
-    summary = _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer)
-    with open(out_dir / "cv_summary.json", "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=2)
+    tokenizer = AutoTokenizer.from_pretrained(hub_id)
+    summary = _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer, run=run, resume=resume)
+    ExperimentRun._atomic_write_json(out_dir / "cv_summary.json", {"folds": summary})
+    run.finalize(status="completed", n_folds=len(summary))
     return summary
 
 
-def _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer, dry_run=False):
+def _assemble_binary_on_multilabel_folds(
+    cfg,
+    hub_id,
+    tokenizer,
+    *,
+    run: ExperimentRun,
+    resume: bool = True,
+):
     """Train binary heads on shared multilabel folds and apply top-k assembly."""
     emotions = cfg["data"]["emotions"]
     df = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
@@ -204,38 +306,78 @@ def _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer, dry_run=False):
     seed = int(cfg["project"]["seed"])
     max_labels = int(cfg["evaluation"]["max_labels"])
     summary = []
+    out_root = run.out_dir
 
     for fold, (train_idx, val_idx) in enumerate(multilabel_folds(y, n_folds, seed), start=1):
+        fold_dir = out_root / f"fold_{fold}"
+        fold_dir.mkdir(parents=True, exist_ok=True)
+
+        if run.fold_done(fold):
+            metrics = run.load_fold_metrics(fold)
+            if metrics:
+                clean = {k: v for k, v in metrics.items() if k != "_meta"}
+                summary.append({"fold": fold, "metrics": clean})
+                print(f"[resume] skip binary fold {fold}")
+                continue
+
         train_df = df.iloc[train_idx].reset_index(drop=True)
         val_df = df.iloc[val_idx].reset_index(drop=True)
+        probs_path = fold_dir / "probs.npy"
+        done_path = fold_dir / "emotions_done.json"
+
         probs = np.zeros((len(val_df), len(emotions)), dtype=np.float32)
+        done: list[str] = []
+        if resume and probs_path.exists() and done_path.exists():
+            try:
+                probs = np.load(probs_path)
+                done = json.loads(done_path.read_text(encoding="utf-8"))
+                print(f"[resume] fold {fold}: emotions done={done}")
+            except Exception:  # noqa: BLE001
+                probs = np.zeros((len(val_df), len(emotions)), dtype=np.float32)
+                done = []
+
+        t0 = timed()
+        run.log_event("fold_started", fold=fold, head="binary", n_val=len(val_df))
+
         for ei, emotion in enumerate(emotions):
+            if emotion in done:
+                continue
             model = AutoModelForSequenceClassification.from_pretrained(hub_id, num_labels=2)
-            train_ds = Dataset.from_dict({"text": train_df["sentence"].tolist(), "labels": train_df[emotion].astype(int).tolist()})
-            val_ds = Dataset.from_dict({"text": val_df["sentence"].tolist(), "labels": val_df[emotion].astype(int).tolist()})
+            train_ds = Dataset.from_dict(
+                {"text": train_df["sentence"].tolist(), "labels": train_df[emotion].astype(int).tolist()}
+            )
+            val_ds = Dataset.from_dict(
+                {"text": val_df["sentence"].tolist(), "labels": val_df[emotion].astype(int).tolist()}
+            )
 
             def tok(batch):
                 return tokenizer(batch["text"], truncation=True, max_length=int(cfg["training"]["max_length"]))
 
             train_ds = train_ds.map(tok, batched=True, remove_columns=["text"])
             val_ds = val_ds.map(tok, batched=True, remove_columns=["text"])
+            emotion_dir = fold_dir / f"emotion_{emotion}"
             args = TrainingArguments(
-                output_dir=str(resolve_path(cfg["project"]["output_dir"]) / "_tmp_binary" / emotion / f"fold_{fold}"),
+                output_dir=str(emotion_dir),
                 num_train_epochs=float(cfg["training"]["epochs"]),
                 learning_rate=float(cfg["training"]["learning_rate"]),
                 per_device_train_batch_size=int(cfg["training"]["train_batch_size"]),
                 per_device_eval_batch_size=int(cfg["training"]["eval_batch_size"]),
                 report_to=[],
-                save_strategy="no",
+                save_strategy="epoch",
             )
-            trainer = Trainer(model=model, args=args, train_dataset=train_ds, eval_dataset=val_ds, tokenizer=tokenizer)
+            trainer = Trainer(
+                model=model, args=args, train_dataset=train_ds, eval_dataset=val_ds, tokenizer=tokenizer
+            )
             trainer.train()
             logits = trainer.predict(val_ds).predictions
             probs[:, ei] = torch.softmax(torch.tensor(logits), dim=-1).numpy()[:, 1]
 
-        # Positive if above 0.5, then top-k by confidence
+            done.append(emotion)
+            np.save(probs_path, probs)
+            ExperimentRun._atomic_write_json(done_path, done)
+            run.log_event("binary_emotion_done", fold=fold, emotion=emotion)
+
         raw = (probs >= 0.5).astype(int)
-        # Enforce max_labels
         preds = np.zeros_like(raw)
         for i in range(len(val_df)):
             pos = np.where(raw[i] == 1)[0]
@@ -245,11 +387,22 @@ def _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer, dry_run=False):
                 pos = pos[np.argsort(-probs[i, pos])[:max_labels]]
             preds[i, pos] = 1
         metrics = compute_metrics(label_matrix(val_df, emotions), preds, emotions)
+        elapsed = timed() - t0
         summary.append({"fold": fold, "metrics": metrics})
+        run.mark_fold_done(fold, metrics, elapsed_s=elapsed)
+        ExperimentRun._atomic_write_json(out_root / "cv_summary.json", {"folds": summary})
+        print(f"binary fold {fold} done in {elapsed:.1f}s macro_f1={metrics['macro_f1']:.4f}")
+
     return summary
 
 
-def _write_cv_summary(results: list[FoldResult], path: Path, emotions: list[str]) -> None:
+def _write_cv_summary(
+    results: list[FoldResult],
+    path: Path,
+    emotions: list[str],
+    *,
+    run: ExperimentRun | None = None,
+) -> None:
     agg = {}
     keys = ["subset_accuracy", "micro_f1", "macro_f1", "weighted_f1"]
     for k in keys:
@@ -259,6 +412,14 @@ def _write_cv_summary(results: list[FoldResult], path: Path, emotions: list[str]
     for e in emotions:
         f1s = [r.metrics["per_emotion"][e]["f1"] for r in results]
         per[e] = {"f1_mean": float(np.mean(f1s)), "f1_std": float(np.std(f1s))}
+    payload = {
+        "folds": [{"fold": r.fold, **r.metrics} for r in results],
+        "aggregate": agg,
+        "per_emotion": per,
+        "n_folds_completed": len(results),
+        "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    if run is not None:
+        payload["usage"] = run.usage_totals.as_dict()
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump({"folds": [r.metrics for r in results], "aggregate": agg, "per_emotion": per}, f, indent=2)
+    ExperimentRun._atomic_write_json(path, payload)

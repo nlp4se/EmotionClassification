@@ -78,3 +78,10 @@ augmentation:
   default_generator: claude
   default_strategy: few_shot_guidelines_dataset
   temperature: 0.8
+
+experiment:
+  # If true, re-running the same command skips completed folds / sentences / generations
+  # and appends to existing logs under the output directory.
+  resume: true
+  # Flush decoder predictions after every sentence (safest for crashes).
+  flush_every: 1

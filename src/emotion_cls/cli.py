@@ -65,6 +65,7 @@ def list_models(ctx: click.Context) -> None:
 @click.option("--folds", type=int, default=None)
 @click.option("--epochs", type=float, default=None)
 @click.option("--dry-run", is_flag=True)
+@click.option("--no-resume", is_flag=True, help="Ignore existing fold checkpoints and re-run from scratch")
 @click.pass_context
 def train_encoder(
     ctx: click.Context,
@@ -77,8 +78,21 @@ def train_encoder(
     folds: int | None,
     epochs: float | None,
     dry_run: bool,
+    no_resume: bool,
 ) -> None:
     """Fine-tune encoder-only models (Hugging Face Transformers)."""
+    # Isolate GenAI inject sizes into distinct resumable output dirs
+    imb_method = imbalance
+    if imbalance and "genai_aug" in imbalance and aug_inject_n is not None:
+        parts = []
+        for p in imbalance.split(","):
+            p = p.strip()
+            if p == "genai_aug":
+                parts.append(f"genai_aug_n{aug_inject_n}")
+            else:
+                parts.append(p)
+        imb_method = ",".join(parts)
+
     cfg = _apply_overrides(
         ctx.obj["cfg"],
         {
@@ -86,21 +100,23 @@ def train_encoder(
             "training.head": head,
             "training.epochs": epochs,
             "evaluation.n_folds": folds,
-            "imbalance.method": imbalance,
+            "imbalance.method": imb_method,
             "imbalance.undersample_cutoff": undersample_cutoff,
             "imbalance.aug_inject_n": aug_inject_n,
             "imbalance.synthetic_ml_path": synthetic_ml_path,
+            "experiment.resume": False if no_resume else None,
         },
     )
     from emotion_cls.training.encoder import run_binary_ensemble_cv, run_multilabel_cv
 
     head = cfg["training"]["head"]
+    resume = bool(cfg.get("experiment", {}).get("resume", True)) and not no_resume
     if head == "multilabel":
-        results = run_multilabel_cv(cfg, dry_run=dry_run)
+        results = run_multilabel_cv(cfg, dry_run=dry_run, resume=resume)
         if not dry_run:
             click.echo(f"Folds done: {len(results)}")
     else:
-        results = run_binary_ensemble_cv(cfg, dry_run=dry_run)
+        results = run_binary_ensemble_cv(cfg, dry_run=dry_run, resume=resume)
         if not dry_run:
             click.echo(f"Binary ensemble folds done: {len(results)}")
 
@@ -114,6 +130,7 @@ def train_encoder(
 )
 @click.option("--folds", type=int, default=None)
 @click.option("--dry-run", is_flag=True)
+@click.option("--no-resume", is_flag=True, help="Ignore saved predictions and re-run from scratch")
 @click.pass_context
 def classify_decoder(
     ctx: click.Context,
@@ -121,15 +138,21 @@ def classify_decoder(
     strategy: str | None,
     folds: int | None,
     dry_run: bool,
+    no_resume: bool,
 ) -> None:
     """Zero-/few-shot classification with Ollama or proprietary APIs."""
     cfg = _apply_overrides(
         ctx.obj["cfg"],
-        {"decoding.strategy": strategy, "evaluation.n_folds": folds},
+        {
+            "decoding.strategy": strategy,
+            "evaluation.n_folds": folds,
+            "experiment.resume": False if no_resume else None,
+        },
     )
     from emotion_cls.decoding.classify import run_decoder_classification
 
-    out = run_decoder_classification(cfg, decoder, dry_run=dry_run)
+    resume = bool(cfg.get("experiment", {}).get("resume", True)) and not no_resume
+    out = run_decoder_classification(cfg, decoder, dry_run=dry_run, resume=resume)
     click.echo(f"Output: {out}")
 
 
@@ -143,6 +166,7 @@ def classify_decoder(
     type=click.Choice(["zero_shot", "few_shot_guidelines", "few_shot_guidelines_dataset"]),
     default="few_shot_guidelines_dataset",
 )
+@click.option("--no-resume", is_flag=True)
 @click.pass_context
 def generate(
     ctx: click.Context,
@@ -151,10 +175,13 @@ def generate(
     target_count: int | None,
     batch_size: int,
     strategy: str,
+    no_resume: bool,
 ) -> None:
     """Generate synthetic reviews until a target count is reached."""
     from emotion_cls.augmentation.generate import generate_for_emotion
 
+    if no_resume:
+        ctx.obj["cfg"].setdefault("experiment", {})["resume"] = False
     path = generate_for_emotion(
         ctx.obj["cfg"],
         decoder_key=decoder,
@@ -162,6 +189,7 @@ def generate(
         target_count=target_count,
         batch_size=batch_size,
         strategy=strategy,
+        resume=not no_resume,
     )
     click.echo(f"Wrote {path}")
 
@@ -174,11 +202,16 @@ def generate(
     default="few_shot_guidelines_dataset",
 )
 @click.option("--batch-size", type=int, default=10)
+@click.option("--no-resume", is_flag=True)
 @click.pass_context
-def generate_parity(ctx: click.Context, decoder: str, strategy: str, batch_size: int) -> None:
+def generate_parity(
+    ctx: click.Context, decoder: str, strategy: str, batch_size: int, no_resume: bool
+) -> None:
     """Generate synthetic reviews for all Plutchik emotions up to majority parity."""
     from emotion_cls.augmentation.generate import generate_for_emotion
 
+    if no_resume:
+        ctx.obj["cfg"].setdefault("experiment", {})["resume"] = False
     for emotion in ctx.obj["cfg"]["data"]["generation_emotions"]:
         path = generate_for_emotion(
             ctx.obj["cfg"],
@@ -187,6 +220,7 @@ def generate_parity(ctx: click.Context, decoder: str, strategy: str, batch_size:
             target_count=None,
             batch_size=batch_size,
             strategy=strategy,
+            resume=not no_resume,
         )
         click.echo(f"{emotion}: {path}")
 
@@ -238,9 +272,16 @@ def predict(ctx: click.Context, model_path: str, input_path: str, output_path: s
 @click.option("--encoder", default="bert-base-cased")
 @click.option("--cutoffs", default="50,100,150,200,250,300,350")
 @click.option("--dry-run", is_flag=True)
+@click.option("--no-resume", is_flag=True)
 @click.pass_context
-def sweep_undersample(ctx: click.Context, encoder: str, cutoffs: str, dry_run: bool) -> None:
-    """Undersampling cutoff sweep for multilabel fine-tuning."""
+def sweep_undersample(
+    ctx: click.Context, encoder: str, cutoffs: str, dry_run: bool, no_resume: bool
+) -> None:
+    """Undersampling cutoff sweep for multilabel fine-tuning.
+
+    Each cutoff writes to its own resumable directory
+    ``outputs/encoder_multilabel/<encoder>/undersample_c<cutoff>/``.
+    """
     from emotion_cls.training.encoder import run_multilabel_cv
 
     for cutoff in [int(x) for x in cutoffs.split(",")]:
@@ -249,12 +290,15 @@ def sweep_undersample(ctx: click.Context, encoder: str, cutoffs: str, dry_run: b
             {
                 "training.encoder": encoder,
                 "training.head": "multilabel",
-                "imbalance.method": "undersample",
+                # Tag isolates output dirs per cutoff while still enabling undersampling
+                "imbalance.method": f"undersample_c{cutoff}",
                 "imbalance.undersample_cutoff": cutoff,
+                "experiment.resume": False if no_resume else None,
             },
         )
+        resume = bool(cfg.get("experiment", {}).get("resume", True)) and not no_resume
         click.echo(f"=== undersample cutoff={cutoff} ===")
-        run_multilabel_cv(cfg, dry_run=dry_run)
+        run_multilabel_cv(cfg, dry_run=dry_run, resume=resume)
 
 
 @main.command("export-run-config")

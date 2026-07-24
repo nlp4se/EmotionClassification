@@ -51,7 +51,19 @@ def rank_augmentation_utility(cfg: dict[str, Any]) -> Path:
 
     from sentence_transformers import SentenceTransformer
 
+    from emotion_cls.experiment import ExperimentRun, timed
+
+    out_dir = resolve_path(cfg["project"]["output_dir"]) / "augmentation_utility"
+    run = ExperimentRun(
+        out_dir,
+        name="rank_augmentation",
+        cfg=cfg,
+        resume=False,
+        extra_meta={"n_synth": len(synth)},
+    )
+
     embedder_name = cfg["augmentation"]["embedder"]
+    t0 = timed()
     encoder = SentenceTransformer(embedder_name)
     gt_emb = {
         e: encoder.encode(
@@ -97,7 +109,6 @@ def rank_augmentation_utility(cfg: dict[str, Any]) -> Path:
     agg = agg.sort_values("borda", ascending=False).reset_index(drop=True)
     agg["overall_rank"] = np.arange(1, len(agg) + 1)
 
-    out_dir = resolve_path(cfg["project"]["output_dir"]) / "augmentation_utility"
     out_dir.mkdir(parents=True, exist_ok=True)
     ranked.to_csv(out_dir / "per_emotion_ranking.csv", index=False)
     agg.to_csv(out_dir / "aggregate_ranking.csv", index=False)
@@ -106,5 +117,10 @@ def rank_augmentation_utility(cfg: dict[str, Any]) -> Path:
     print(
         f"Recommended single pipeline: {winner['GenAI']} + {winner['Strategy']} "
         f"(borda={winner['borda']:.1f}, emotions_covered={int(winner['emotions_covered'])})"
+    )
+    run.finalize(
+        status="completed",
+        elapsed_s=timed() - t0,
+        recommended=f"{winner['GenAI']}+{winner['Strategy']}",
     )
     return out_dir
