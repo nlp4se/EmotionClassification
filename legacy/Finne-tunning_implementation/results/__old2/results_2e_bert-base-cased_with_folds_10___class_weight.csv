@@ -1,0 +1,60 @@
+===== Summary per fold =====
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+Subset Accuracy (Exact Match),0.9091,0.8125,0.8095,0.8571,0.8730,0.8730,0.8594,0.9254,0.8594,0.8571
+Micro Precision,0.9420,0.8730,0.9167,0.9077,0.9524,0.9667,0.9355,0.9265,0.9062,0.9091
+Micro Recall,0.9559,0.8209,0.8209,0.8806,0.8824,0.8529,0.8529,0.9403,0.8657,0.8955
+Micro F1,0.9489,0.8462,0.8661,0.8939,0.9160,0.9062,0.8923,0.9333,0.8855,0.9023
+Macro Precision,0.9394,0.8712,0.9375,0.9071,0.9545,0.9706,0.9344,0.9272,0.9081,0.9164
+Macro Recall,0.9542,0.8221,0.8063,0.8824,0.8893,0.8518,0.8509,0.9396,0.8721,0.8959
+Macro F1,0.9463,0.8452,0.8545,0.8944,0.9165,0.9068,0.8907,0.9333,0.8856,0.9055
+
+===== Per Emotion Metrics per Fold =====
+--- Joy ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+Precision,1.0000,0.9091,0.8750,0.9143,1.0000,0.9412,0.9429,0.9211,0.9677,0.8684
+Recall,0.9730,0.8108,0.9459,0.8649,0.8108,0.8649,0.8684,0.9459,0.8108,0.8919
+F1,0.9863,0.8571,0.9091,0.8889,0.8955,0.9014,0.9041,0.9333,0.8824,0.8800
+Accuracy,0.9848,0.8438,0.8889,0.8730,0.8889,0.8889,0.8906,0.9254,0.8750,0.8571
+
+--- Sadness ---
+Metric,Fold 1,Fold 2,Fold 3,Fold 4,Fold 5,Fold 6,Fold 7,Fold 8,Fold 9,Fold 10
+Precision,0.8788,0.8333,1.0000,0.9000,0.9091,1.0000,0.9259,0.9333,0.8485,0.9643
+Recall,0.9355,0.8333,0.6667,0.9000,0.9677,0.8387,0.8333,0.9333,0.9333,0.9000
+F1,0.9062,0.8333,0.8000,0.9000,0.9375,0.9123,0.8772,0.9333,0.8889,0.9310
+Accuracy,0.9091,0.8438,0.8413,0.9048,0.9365,0.9206,0.8906,0.9403,0.8906,0.9365
+
+===== Average Per-Emotion Metrics =====
+Emotion,Precision,Recall,F1,Accuracy
+Joy,0.9340,0.8787,0.9038,0.8916
+Sadness,0.9193,0.8742,0.8920,0.9014
+
+===== Cross-validation Mean Results =====
+Metric,Mean
+Subset Accuracy (Exact Match),0.8636
+Micro Precision,0.9236
+Micro Recall,0.8768
+Micro F1,0.8991
+Macro Precision,0.9266
+Macro Recall,0.8765
+Macro F1,0.8979
+
+===== Class Weights per Emotion =====
+Emotion,Weight
+Joy,0.454178
+Sadness,0.556106
+
+===== Timings =====
+Start timing,2025-11-20 10:00:17.391968
+Class weight calculation time,0:00:00.042603
+Fold 1 time,0:02:44.270707
+Fold 2 time,0:02:39.902392
+Fold 3 time,0:02:39.579246
+Fold 4 time,0:02:46.957605
+Fold 5 time,0:02:25.146564
+Fold 6 time,0:03:04.905323
+Fold 7 time,0:02:24.012638
+Fold 8 time,0:02:19.728831
+Fold 9 time,0:02:16.705516
+Fold 10 time,0:02:26.853671
+Printing results,0:00:00.017504
+Total duration,0:25:48.709708

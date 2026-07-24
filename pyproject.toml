@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "emotion-cls"
+version = "0.1.0"
+description = "Replication package: LLM-based fine-grained emotion classification of mobile app reviews"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.1",
+  "transformers>=4.40",
+  "datasets>=2.18",
+  "accelerate>=0.28",
+  "sentencepiece>=0.2",
+  "protobuf>=4.25",
+  "scikit-learn>=1.4",
+  "iterative-stratification>=0.1.7",
+  "pandas>=2.1",
+  "numpy>=1.26",
+  "pyyaml>=6.0",
+  "python-dotenv>=1.0",
+  "requests>=2.31",
+  "click>=8.1",
+  "tqdm>=4.66",
+  "sentence-transformers>=3.0",
+]
+
+[project.optional-dependencies]
+gemini = ["google-genai>=1.0"]
+dev = ["pytest>=8.0", "ruff>=0.4"]
+
+[project.scripts]
+emotion-cls = "emotion_cls.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+emotion_cls = ["resources/*.py"]

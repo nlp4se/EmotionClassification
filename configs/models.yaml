@@ -1,0 +1,114 @@
+# Model catalogue aligned with the IST paper (Table: models).
+
+encoders:
+  bert-base-cased:
+    hub_id: bert-base-cased
+    family: BERT
+    size: base
+    baseline: true
+  bert-large-cased:
+    hub_id: bert-large-cased
+    family: BERT
+    size: large
+  roberta-base:
+    hub_id: roberta-base
+    family: RoBERTa
+    size: base
+  roberta-large:
+    hub_id: roberta-large
+    family: RoBERTa
+    size: large
+  distilbert-base-cased:
+    hub_id: distilbert-base-cased
+    family: DistilBERT
+    size: base
+  deberta-v3-base:
+    hub_id: microsoft/deberta-v3-base
+    family: DeBERTa-v3
+    size: base
+  deberta-v3-large:
+    hub_id: microsoft/deberta-v3-large
+    family: DeBERTa-v3
+    size: large
+  xlnet-base-cased:
+    hub_id: xlnet-base-cased
+    family: XLNet
+    size: base
+  xlnet-large-cased:
+    hub_id: xlnet-large-cased
+    family: XLNet
+    size: large
+
+decoders:
+  # Open-source via Ollama (local)
+  llama4-scout:
+    backend: ollama
+    model_id: llama4:scout
+    access: open-source
+    provider: Meta
+  gemma3-27b:
+    backend: ollama
+    model_id: gemma3:27b
+    access: open-source
+    provider: Google
+  qwen3-30b:
+    backend: ollama
+    model_id: qwen3:30b-a3b
+    access: open-source
+    provider: Alibaba
+  gpt-oss-20b:
+    backend: ollama
+    model_id: gpt-oss:20b
+    access: open-source
+    provider: OpenAI
+  mistral-small3.1-24b:
+    backend: ollama
+    model_id: mistral-small3.1:24b
+    access: open-source
+    provider: Mistral
+  deepseek-r1-8b:
+    backend: ollama
+    model_id: deepseek-r1:8b
+    access: open-source
+    provider: DeepSeek
+
+  # Proprietary via official APIs
+  gpt-5.3-chat:
+    backend: openai
+    model_id: gpt-5.3-chat
+    access: proprietary
+    provider: OpenAI
+    api_key_env: OPENAI_API_KEY
+  gemini-3-flash:
+    backend: gemini
+    model_id: gemini-3-flash
+    access: proprietary
+    provider: Google
+    api_key_env: GEMINI_API_KEY
+  claude-opus-4-6:
+    backend: anthropic
+    model_id: claude-opus-4-6
+    access: proprietary
+    provider: Anthropic
+    api_key_env: ANTHROPIC_API_KEY
+  mistral-large-2512:
+    backend: mistral
+    model_id: mistral-large-2512
+    access: proprietary
+    provider: Mistral
+    api_key_env: MISTRAL_API_KEY
+
+# Generators used in the RQ4 utility pilot (smaller / cheaper than full RQ2 set)
+augmentation_pilot:
+  claude:
+    backend: anthropic
+    model_id: claude-sonnet-4-6
+    api_key_env: ANTHROPIC_API_KEY
+  gemini:
+    backend: gemini
+    model_id: gemini-2.5-flash
+    api_key_env: GEMINI_API_KEY
+  openai:
+    backend: openai
+    model_id: gpt-4o-mini
+    api_key_env: OPENAI_API_KEY

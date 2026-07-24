@@ -1,0 +1,20 @@
+# Core
+torch>=2.1
+transformers>=4.40
+datasets>=2.18
+accelerate>=0.28
+sentencepiece>=0.2
+protobuf>=4.25
+scikit-learn>=1.4
+iterative-stratification>=0.1.7
+pandas>=2.1
+numpy>=1.26
+pyyaml>=6.0
+python-dotenv>=1.0
+requests>=2.31
+click>=8.1
+tqdm>=4.66
+sentence-transformers>=3.0
+
+# Optional proprietary Gemini SDK (HTTP client also works without it)
+# google-genai>=1.0

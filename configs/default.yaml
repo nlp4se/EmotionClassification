@@ -1,0 +1,78 @@
+# Default experiment settings (IST Emotion Classification paper).
+
+project:
+  seed: 42
+  output_dir: outputs
+  models_dir: models
+
+data:
+  ground_truth: Datasets/GroundTruth.csv
+  synthetic_dir: Datasets
+  text_column: sentence
+  # Plutchik + Neutral; Reject dropped
+  emotions:
+    - Joy
+    - Trust
+    - Fear
+    - Surprise
+    - Sadness
+    - Disgust
+    - Anger
+    - Anticipation
+    - Neutral
+  generation_emotions:  # Neutral is not a generation target
+    - Joy
+    - Trust
+    - Fear
+    - Surprise
+    - Sadness
+    - Disgust
+    - Anger
+    - Anticipation
+
+evaluation:
+  n_folds: 10
+  max_labels: 3
+  metrics:
+    - precision
+    - recall
+    - f1
+  averages:
+    - micro
+    - macro
+    - weighted
+  subset_accuracy: true
+  primary_metric: macro_f1
+
+training:
+  encoder: bert-base-cased
+  head: multilabel          # multilabel | binary
+  epochs: 3
+  learning_rate: 2.0e-5
+  train_batch_size: 8
+  eval_batch_size: 16
+  max_length: 512
+  weight_decay: 0.01
+  warmup_ratio: 0.0
+  gradient_accumulation_steps: 1
+  fp16: false
+  early_stopping_patience: 2
+
+imbalance:
+  method: none              # see configs/imbalance.yaml
+  reduction: mean
+  focal_gamma: 2.0
+  undersample_cutoff: null  # e.g. 150; sweep {50,100,150,...}
+  aug_inject_n: null        # synthetic positives per emotion; bins of 50
+  synthetic_source: null    # path or provider key used for GenAI rows
+
+decoding:
+  temperature: 0.0
+  strategy: zero_shot       # zero_shot | few_shot_guidelines | few_shot_guidelines_dataset
+  few_shot_k: 5
+
+augmentation:
+  embedder: sentence-transformers/all-MiniLM-L6-v2
+  pilot_n_per_cell: 20
+  default_generator: claude
+  default_strategy: few_shot_guidelines_dataset
