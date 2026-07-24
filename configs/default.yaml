@@ -30,6 +30,7 @@ data:
     - Disgust
     - Anger
     - Anticipation
+    - Neutral
 
 evaluation:
   n_folds: 10

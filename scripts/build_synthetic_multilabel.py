@@ -23,6 +23,7 @@ def main() -> None:
 
     cfg = load_default_config()
     emotions = cfg["data"]["generation_emotions"]
+    all_emotions = cfg["data"]["emotions"]
     synth = load_synthetic_dir(cfg["data"]["synthetic_dir"], emotions)
     ml = synthetic_as_multilabel(
         synth,
@@ -31,9 +32,10 @@ def main() -> None:
         genai=args.genai,
         n_per_emotion=args.n_per_emotion,
     )
-    # Add Neutral=0
-    if "Neutral" not in ml.columns:
-        ml["Neutral"] = 0
+    # Ensure full label schema (any emotion not in the generation set stays 0)
+    for e in all_emotions:
+        if e not in ml.columns:
+            ml[e] = 0
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     ml.to_csv(out, sep=";", index=False)

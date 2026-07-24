@@ -60,7 +60,7 @@ def label_matrix(df: pd.DataFrame, emotions: list[str]) -> np.ndarray:
 
 
 def majority_count(df: pd.DataFrame, emotions: list[str]) -> int:
-    """Max positive count among generation target emotions (excludes Neutral if absent)."""
+    """Max positive count among generation target emotions (includes Neutral when listed)."""
     return int(df[emotions].sum().max())
 
 

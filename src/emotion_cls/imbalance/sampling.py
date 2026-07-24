@@ -63,8 +63,6 @@ def inject_synthetic(
         return human_df.reset_index(drop=True)
     parts = [human_df]
     for e in emotions:
-        if e == "Neutral":
-            continue
         sub = synthetic_ml[synthetic_ml[e] == 1]
         if n_per_emotion is not None:
             sub = sub.head(int(n_per_emotion))

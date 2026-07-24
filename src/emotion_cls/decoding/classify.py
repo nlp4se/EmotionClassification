@@ -151,8 +151,6 @@ def run_decoder_classification(
         if strategy == "few_shot_guidelines_dataset":
             few = {}
             for e in emotions:
-                if e == "Neutral":
-                    continue
                 ex = train_df.loc[train_df[e] == 1, "sentence"].tolist()[:few_k]
                 few[e] = ex
 

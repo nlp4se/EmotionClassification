@@ -141,6 +141,8 @@ def generation_definition(
     guidelines_path: str | None = None,
 ) -> str:
     """Per-emotion text for synthetic review generation."""
+    if emotion == "Neutral":
+        return neutral_definition()
     text = load_guidelines_text(guidelines_path)
     section = emotion_section(emotion, text)
     if strategy in {"zero_shot", "zeroShoot"}:
