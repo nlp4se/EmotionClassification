@@ -168,7 +168,11 @@ venv.bak/
 .dmypy.json
 dmypy.json
 models/
+models_smoke/
 outputs/
+outputs_smoke/
+Datasets/smoke/
+logs/
 *.egg-info/
 .embeddings_cache/
 

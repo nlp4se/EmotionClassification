@@ -7,6 +7,7 @@ the remaining quota is filled. Each successful batch is flushed to disk.
 from __future__ import annotations
 
 import csv
+import time
 from pathlib import Path
 from typing import Any
 
@@ -107,6 +108,9 @@ def generate_for_emotion(
         run.finalize(status="completed", reason="already_at_target")
         return out_path
 
+    consecutive_errors = 0
+    max_consecutive_errors = 8
+    backoff = 1.0
     while need > 0:
         n = min(batch_size, need)
         messages = generation_messages(
@@ -124,9 +128,10 @@ def generate_for_emotion(
             )
             payload = parse_json_payload(result.text)
             reviews = payload.get("reviews", payload if isinstance(payload, list) else [])
+            consecutive_errors = 0
+            backoff = 1.0
         except Exception as exc:  # noqa: BLE001
             run.log_event("generate_batch_error", emotion=emotion, error=str(exc))
-            print(f"  batch error: {exc}; retrying...")
             msg = str(exc).lower()
             # Do not spin forever on auth / permission failures
             if any(x in msg for x in ("401", "403", "unauthorized", "invalid api key", "authentication")):
@@ -134,6 +139,25 @@ def generate_for_emotion(
                 raise RuntimeError(
                     f"Fatal auth/permission error while generating {emotion}: {exc}"
                 ) from exc
+            # Any other error (bad model id, persistent 4xx/5xx, malformed LLM
+            # output, ...) used to retry immediately forever with no backoff
+            # and no cap -- a single persistent failure (e.g. a wrong model
+            # id) would spin here indefinitely, hammering the API. Back off
+            # and give up after enough *consecutive* failures; a transient
+            # blip that later succeeds resets the counter.
+            consecutive_errors += 1
+            if consecutive_errors >= max_consecutive_errors:
+                run.finalize(status="failed", error=str(exc), consecutive_errors=consecutive_errors)
+                raise RuntimeError(
+                    f"Giving up generating {emotion} after {consecutive_errors} consecutive "
+                    f"non-auth failures (already retried with backoff): {exc}"
+                ) from exc
+            print(
+                f"  batch error ({consecutive_errors}/{max_consecutive_errors}): {exc}; "
+                f"retrying in {backoff:.0f}s..."
+            )
+            time.sleep(backoff)
+            backoff = min(backoff * 2, 60.0)
             continue
 
         added = 0
