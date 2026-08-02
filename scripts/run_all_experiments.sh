@@ -4,7 +4,16 @@
 #
 # Resume-safe: re-running skips completed folds / sentences / generations.
 # GPU-heavy phases run sequentially; API classify + generation start in parallel.
-set -euo pipefail
+#
+# Deliberately does NOT use `set -e`: this runs unattended for hours/days
+# across 9 encoders x several imbalance methods, 6 local + 4 API decoders x 3
+# strategies x 3 temperatures, and 4 generators. A single failure (CUDA OOM on
+# one encoder, a transient API error, one bad ollama pull) must not abort
+# every independent phase that comes after it. Every command is run through
+# run_logged, which logs a WARNING and continues on failure; failures are
+# collected in logs/master_failures.log and summarized at the end. Re-running
+# this script picks up unfinished work via the resume mechanism.
+set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -12,6 +21,8 @@ cd "$ROOT"
 source "$ROOT/.venv/bin/activate"
 
 mkdir -p logs "$ROOT/Datasets/generated"
+FAILURES_LOG="logs/master_failures.log"
+: > "$FAILURES_LOG"
 
 STRATEGY="${STRATEGY:-few_shot_guidelines_dataset}"
 BEST_ENC="${BEST_ENC:-}"          # empty => auto-pick after RQ1 multilabel
@@ -45,8 +56,40 @@ phase() { echo; echo "======== $* ======== $(date -Is)"; echo; }
 run_logged() {
   local logfile="$1"; shift
   log "RUN -> $logfile :: $*"
-  # Append to phase log and master stdout
-  "$@" >>"$logfile" 2>&1
+  # Append to phase log and master stdout. Never let a single failed command
+  # abort the whole unattended run: log it and keep going (see header note).
+  if ! "$@" >>"$logfile" 2>&1; then
+    local msg="FAILED [$(date -Is)] (see $logfile) :: $*"
+    log "WARN: $msg"
+    echo "$msg" >>"$FAILURES_LOG"
+    return 1
+  fi
+}
+
+classify_error_rate_ok() {
+  # `classify-decoder` swallows per-sentence errors (bad API key, rate limit,
+  # transient 5xx, ...) and still exits 0 so one bad key doesn't nuke the CV
+  # loop. That means a decoder whose key is entirely broken looks identical
+  # to a clean run from the exit code alone. Flag it explicitly instead.
+  local decoder="$1" strategy="$2" temp="$3"
+  python3 - "$decoder" "$strategy" "$temp" <<'PY'
+import sys, glob
+import pandas as pd
+decoder, strategy, temp = sys.argv[1], sys.argv[2], sys.argv[3]
+tag = f"t{float(temp):g}"
+files = glob.glob(f"outputs/decoder_classify/{decoder}/{strategy}/{tag}/fold_*/predictions.csv")
+if not files:
+    sys.exit(1)
+total, errors = 0, 0
+for f in files:
+    df = pd.read_csv(f)
+    total += len(df)
+    if "error" in df.columns:
+        errors += df["error"].astype(str).replace("nan", "").str.len().gt(0).sum()
+rate = errors / total if total else 1.0
+print(f"{decoder}/{strategy}/{tag}: {errors}/{total} sentences errored ({rate:.0%})")
+sys.exit(1 if rate > 0.5 else 0)
+PY
 }
 
 pick_best_encoder() {
@@ -127,14 +170,19 @@ GEN_PID=""
 
 if [[ "$SKIP_RQ2_API" != "1" ]]; then
   (
-    set -euo pipefail
+    set -uo pipefail
     source "$ROOT/.venv/bin/activate"
     cd "$ROOT"
     for d in "${DECODERS_API[@]}"; do
       for s in "${STRATEGIES[@]}"; do
         for t in "${TEMPS[@]}"; do
           echo "===== API $d | $s | T=$t $(date -Is) ====="
-          emotion-cls classify-decoder --decoder "$d" --strategy "$s" --temperature "$t"
+          if emotion-cls classify-decoder --decoder "$d" --strategy "$s" --temperature "$t"; then
+            classify_error_rate_ok "$d" "$s" "$t" \
+              || echo "WARN: API $d | $s | T=$t has a >50% sentence error rate (check the key?), continuing"
+          else
+            echo "WARN: API $d | $s | T=$t failed, continuing"
+          fi
         done
       done
     done
@@ -146,12 +194,13 @@ fi
 
 if [[ "$SKIP_RQ4_GEN" != "1" ]]; then
   (
-    set -euo pipefail
+    set -uo pipefail
     source "$ROOT/.venv/bin/activate"
     cd "$ROOT"
     for g in "${GENERATORS[@]}"; do
       echo "===== generate-parity $g $(date -Is) ====="
-      emotion-cls generate-parity --decoder "$g" --strategy "$STRATEGY"
+      emotion-cls generate-parity --decoder "$g" --strategy "$STRATEGY" \
+        || echo "WARN: generate-parity $g failed, continuing"
     done
     echo "===== RQ4 GENERATE DONE $(date -Is) ====="
   ) >logs/rq4_generate_parity.log 2>&1 &
@@ -213,9 +262,15 @@ PY
         else
           log "===== OSS $d | $s | T=$t ====="
         fi
-        run_logged logs/rq2_decoder_oss.log \
+        if run_logged logs/rq2_decoder_oss.log \
           emotion-cls classify-decoder --decoder "$d" --strategy "$s" --temperature "$t" \
           "${unload_flag[@]}"
+        then
+          classify_error_rate_ok "$d" "$s" "$t" || {
+            msg="OSS $d | $s | T=$t has a >50% sentence error rate, continuing"
+            log "WARN: $msg"; echo "$msg" >>"$FAILURES_LOG"
+          }
+        fi
       done
     done
     log "===== OSS model lifecycle done: $d ====="
@@ -258,8 +313,12 @@ phase "5) RQ3 imbalance on best RQ1 encoder (GPU)"
 if [[ "$SKIP_RQ3" != "1" ]]; then
   if [[ -z "$BEST_ENC" ]]; then
     log "Auto-picking BEST_ENC from RQ1 multilabel summaries..."
-    BEST_ENC="$(pick_best_encoder)"
+    BEST_ENC="$(pick_best_encoder)" || BEST_ENC=""
   fi
+  if [[ -z "$BEST_ENC" ]]; then
+    msg="RQ3 skipped: no BEST_ENC (no encoder finished RQ1 multilabel — check logs/rq1_multilabel_all.log)"
+    log "WARN: $msg"; echo "$msg" >>"$FAILURES_LOG"
+  else
   log "BEST_ENC=$BEST_ENC"
 
   for imb in "${IMBALANCE_LOSSES[@]}"; do
@@ -288,6 +347,7 @@ if [[ "$SKIP_RQ3" != "1" ]]; then
       --imbalance genai_aug,bce_pos_weight --aug-inject-n 100 --synthetic-ml-path "$SYNTH_CSV"
 
   log "RQ3 DONE"
+  fi
 else
   log "SKIP RQ3"
 fi
@@ -295,4 +355,12 @@ fi
 phase "ALL EXPERIMENTS FINISHED"
 log "Disk:"; df -h . | tail -1
 log "Outputs:"; du -sh outputs .cache/huggingface 2>/dev/null || true
+n_fail=$(wc -l <"$FAILURES_LOG" | tr -d ' ')
+if [[ "$n_fail" != "0" ]]; then
+  log "WARNING: $n_fail command(s) failed or had a high error rate during this run:"
+  cat "$FAILURES_LOG"
+  log "Re-running this script will resume/retry unfinished work; see $FAILURES_LOG for the full list."
+else
+  log "No failures recorded."
+fi
 log "Master log complete."

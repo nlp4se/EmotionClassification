@@ -17,6 +17,42 @@ from emotion_cls.config import load_env, require_api_key
 from emotion_cls.experiment import ChatResult, TokenUsage
 
 
+def _post_with_retry(
+    url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    json_payload: Any = None,
+    params: dict[str, Any] | None = None,
+    timeout: float = 600,
+    max_retries: int = 5,
+) -> requests.Response:
+    """POST with exponential-backoff retry on 429 / 5xx (transient) errors.
+
+    A full CV sweep fires many sequential per-sentence calls; some providers
+    rate-limit well below that (e.g. a Mistral key limited to 15 req/min
+    trips 429 mid-fold with no retry). Honors ``Retry-After`` when the
+    provider sends one. Non-transient errors (401 bad key, 404 bad model id,
+    etc.) raise immediately on the first attempt — retrying those only wastes
+    time.
+    """
+    backoff = 1.0
+    for attempt in range(max_retries + 1):
+        r = requests.post(url, headers=headers, json=json_payload, params=params, timeout=timeout)
+        transient = r.status_code == 429 or r.status_code >= 500
+        if not transient or attempt == max_retries:
+            r.raise_for_status()
+            return r
+        wait = backoff
+        retry_after = r.headers.get("Retry-After")
+        if retry_after:
+            try:
+                wait = max(wait, float(retry_after))
+            except ValueError:
+                pass
+        time.sleep(wait)
+        backoff = min(backoff * 2, 60.0)
+
+
 def _usage_openai_like(data: dict[str, Any]) -> TokenUsage:
     u = data.get("usage") or {}
     prompt = u.get("prompt_tokens")
@@ -97,8 +133,7 @@ class OpenAIClient(LLMClient):
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         payload = {"model": self.model_id, "messages": messages, "temperature": temperature}
         t0 = time.perf_counter()
-        r = requests.post(self.url, headers=headers, json=payload, timeout=600)
-        r.raise_for_status()
+        r = _post_with_retry(self.url, headers=headers, json_payload=payload, timeout=600)
         data = r.json()
         latency_ms = (time.perf_counter() - t0) * 1000.0
         return ChatResult(
@@ -144,8 +179,7 @@ class AnthropicClient(LLMClient):
         if system:
             payload["system"] = system
         t0 = time.perf_counter()
-        r = requests.post(self.url, headers=headers, json=payload, timeout=600)
-        r.raise_for_status()
+        r = _post_with_retry(self.url, headers=headers, json_payload=payload, timeout=600)
         data = r.json()
         latency_ms = (time.perf_counter() - t0) * 1000.0
         u = data.get("usage") or {}
@@ -186,16 +220,15 @@ class GeminiClient(LLMClient):
             f"{self.model_id}:generateContent"
         )
         t0 = time.perf_counter()
-        r = requests.post(
+        r = _post_with_retry(
             url,
             params={"key": self.api_key},
-            json={
+            json_payload={
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {"temperature": temperature},
             },
             timeout=600,
         )
-        r.raise_for_status()
         data = r.json()
         latency_ms = (time.perf_counter() - t0) * 1000.0
         meta = data.get("usageMetadata") or {}
@@ -230,8 +263,7 @@ class MistralClient(LLMClient):
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         payload = {"model": self.model_id, "messages": messages, "temperature": temperature}
         t0 = time.perf_counter()
-        r = requests.post(self.url, headers=headers, json=payload, timeout=600)
-        r.raise_for_status()
+        r = _post_with_retry(self.url, headers=headers, json_payload=payload, timeout=600)
         data = r.json()
         latency_ms = (time.perf_counter() - t0) * 1000.0
         return ChatResult(

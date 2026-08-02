@@ -46,7 +46,15 @@ def _pred_path(fold_dir: Path) -> Path:
 def _load_partial_predictions(path: Path) -> dict[int, dict[str, Any]]:
     if not path.exists():
         return {}
-    df = pd.read_csv(path)
+    try:
+        df = pd.read_csv(path)
+    except (pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError, OSError) as exc:
+        # A crash mid-write (server crash, OOM-kill, ...) can leave a truncated
+        # CSV. Don't brick resume over it: treat the fold as if no partial
+        # predictions were saved and re-classify it from sentence 0. Costs a
+        # re-run of this one fold, not the whole experiment.
+        print(f"[resume] WARNING: {path} is unreadable ({exc!r}); restarting this fold's predictions")
+        return {}
     if "idx" not in df.columns:
         return {}
     out: dict[int, dict[str, Any]] = {}
@@ -86,7 +94,13 @@ def _flush_predictions(path: Path, rows_by_idx: dict[int, dict[str, Any]]) -> No
         if isinstance(item.get("pred"), list):
             item["pred"] = json.dumps(item["pred"])
         serializable.append(item)
-    pd.DataFrame(serializable).to_csv(path, index=False)
+    # Flushed after every sentence, so this is the file most likely to be
+    # mid-write if the process is killed. Write to a temp file and rename
+    # (atomic on the same filesystem) instead of writing `path` in place, so
+    # a crash never leaves a truncated/corrupt predictions.csv behind.
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    pd.DataFrame(serializable).to_csv(tmp, index=False)
+    tmp.replace(path)
 
 
 def run_decoder_classification(

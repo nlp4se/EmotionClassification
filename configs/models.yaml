@@ -75,13 +75,17 @@ decoders:
   # Proprietary via official APIs
   gpt-5.3-chat:
     backend: openai
-    model_id: gpt-5.3-chat
+    # gpt-5.3-chat-latest / gpt-5.2-chat-latest lock temperature to their
+    # internal default (OpenAI rejects any other value with a 400), which
+    # breaks RQ2's temperature-grid sweep. gpt-5.2 is the base (non-chat)
+    # model and accepts temperature 0.0/0.3/0.7 normally.
+    model_id: gpt-5.2
     access: proprietary
     provider: OpenAI
     api_key_env: OPENAI_API_KEY
   gemini-3-flash:
     backend: gemini
-    model_id: gemini-3-flash
+    model_id: gemini-3.5-flash
     access: proprietary
     provider: Google
     api_key_env: GEMINI_API_KEY

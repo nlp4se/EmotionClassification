@@ -1,0 +1,18 @@
+idx,sentence,pred,error,raw,timestamp,prompt_tokens,completion_tokens,total_tokens,latency_ms,model_id,backend
+0,"From Hiding private notes, cloud sync, and making to do.","[""Neutral""]",,,2026-08-02T13:06:02.203800+00:00,2389,10,2399,1262.58,gpt-5.2,openai
+1,"They claim to give you total anonymity and they never see messages or calls on their ""encrypted servers"" .","[""Neutral""]",,,2026-08-02T13:06:03.078324+00:00,2472,10,2482,869.81,gpt-5.2,openai
+2,"As I used all ok, but the call recording is .. only my voice is perfectly recorded.","[""Sadness""]",,,2026-08-02T13:06:03.961789+00:00,2386,11,2397,878.36,gpt-5.2,openai
+3,"I really love this app, specially because of graphs and charts, however I think it can be better by adding subtasks or improvement on graphical environment.","[""Joy"", ""Anticipation""]",,,2026-08-02T13:06:05.003041+00:00,2404,14,2418,1036.62,gpt-5.2,openai
+4,Habe a login option where all data of habits gets stored...,"[""Anticipation""]",,,2026-08-02T13:06:06.101988+00:00,2379,12,2391,1094.41,gpt-5.2,openai
+5,"Edited: Since the update, developers noticed my review and solved some of my problems but only 1 thing, ""People nearby"" Hopefully this will be available.","[""Trust"", ""Anticipation""]",,,2026-08-02T13:06:06.973682+00:00,2467,14,2481,867.14,gpt-5.2,openai
+6,They made recurring tasks a premium feature.,"[""Neutral""]",,,2026-08-02T13:06:07.698059+00:00,2368,10,2378,719.94,gpt-5.2,openai
+7,The developers are incapable of learning from their mistakes and customer feedback.,"[""Anger""]",,,2026-08-02T13:06:08.409585+00:00,2451,11,2462,706.86,gpt-5.2,openai
+8,"Until last month I had no problems with the app but nowadays when I open battery saver mode my alarms give this warning: ""Battery saver might degrade your alarm and timer experience"", instead of ringing.","[""Sadness""]",,,2026-08-02T13:06:09.366375+00:00,2440,11,2451,951.63,gpt-5.2,openai
+9,"I also find the guides voices more relaxing and less ""smug wellness person"" (sorry!) than many of the Calm ones.","[""Joy""]",,,2026-08-02T13:06:10.502953+00:00,2458,10,2468,1131.76,gpt-5.2,openai
+10,"It dosn't sync or connected with any calorie counting apps such as mfp ... it's just a pice of junk if you don't update your softwear to sync with sny calorie counting apps , and also not all features working with samsung phones","[""Anger"", ""Disgust""]",,,2026-08-02T13:06:11.318622+00:00,2367,14,2381,811.14,gpt-5.2,openai
+11,I reinstalled the app recently and now the cloud sync inst working.,"[""Sadness""]",,,2026-08-02T13:06:12.100992+00:00,2423,11,2434,777.83,gpt-5.2,openai
+12,FACTS are FACTS AND TRUTH CAN BE PROVEN ON EVERYTHING I HAVE EVER SAID.I HAVE THE DAY 1 texts and messages admitting my personal information so there wouldn't be any future issues.,"[""Anger""]",,,2026-08-02T13:06:12.934166+00:00,2468,11,2479,828.52,gpt-5.2,openai
+13,"I don't like d app , deleting it , entering too much in d privacy.","[""Disgust""]",,,2026-08-02T13:06:13.881369+00:00,2386,11,2397,942.4,gpt-5.2,openai
+14,Telegram is no more as it used to be.,"[""Sadness""]",,,2026-08-02T13:06:15.258176+00:00,2368,11,2379,1372.1,gpt-5.2,openai
+15,"ORIYOMI FABIYI: WE ARE SPECIALIZE IN: COMPUTER ENGINEERING., LAPTOP REPAIR, DESKTOP REPAIR, SALES OF LAPTOP AND DESKTOP, NETWORKING, SUPPLYING OF DESKTOP AND LAPTOP, HARD DISK REPAIR, FROM NIGERIA.","[""Neutral""]",,,2026-08-02T13:06:16.063146+00:00,2479,10,2489,800.24,gpt-5.2,openai
+16,"it's the only white noise thing that has that wonderfully deep engine sound, it puts me right into relaxation.","[""Joy"", ""Trust""]",,,2026-08-02T13:06:17.263774+00:00,2442,12,2454,1195.95,gpt-5.2,openai

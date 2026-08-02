@@ -1,0 +1,19 @@
+idx,sentence,pred,error,raw,timestamp,prompt_tokens,completion_tokens,total_tokens,latency_ms,model_id,backend
+0,"If Ayoba wants to takeover the African social networking market, they must simply go the route of WhatsApp which promoted virtual contacts than actual contacts.","[""Anticipation""]",,,2026-08-02T13:08:47.563571+00:00,2670,12,2682,2588.47,claude-opus-4-6,anthropic
+1,"I also have a video with the workflow, if anybody is interested...","[""Neutral""]",,,2026-08-02T13:08:49.461641+00:00,2690,11,2701,1892.91,claude-opus-4-6,anthropic
+2,This App is also a privacy concern and collects way too much personal information!,"[""Fear"", ""Disgust"", ""Anger""]",,,2026-08-02T13:08:54.432489+00:00,2716,19,2735,4966.11,claude-opus-4-6,anthropic
+3,"Great for online privacy but advertising via pop-ups, very annoying for a ""free"" communication app, that's why I uninstalled it.","[""Joy"", ""Anger"", ""Disgust""]",,,2026-08-02T13:09:01.460523+00:00,2603,19,2622,7023.57,claude-opus-4-6,anthropic
+4,"I am trying to connect to my phone in order to remotely shut down an alarm as i am not wearing it and despite using Bluetooth to connect, it wont let me until I connect to the internet too.","[""Sadness"", ""Anger""]",,,2026-08-02T13:09:05.313606+00:00,2682,16,2698,3848.41,claude-opus-4-6,anthropic
+5,I hate that the most relevant comments are prioritized in comment section.,"[""Anger""]",,,2026-08-02T13:09:07.409881+00:00,2656,11,2667,2091.67,claude-opus-4-6,anthropic
+6,"Encryption may be lacking..., Haven't had an issue yet!","[""Fear"", ""Trust""]",,,2026-08-02T13:09:10.050851+00:00,2622,13,2635,2636.29,claude-opus-4-6,anthropic
+7,Chat features will NOT stay connected which means i recieve no text.,"[""Sadness"", ""Anger""]",,,2026-08-02T13:09:11.990902+00:00,2692,16,2708,1935.37,claude-opus-4-6,anthropic
+8,Please fixed the video chat because the echo is to loude please fixed it,"[""Sadness"", ""Anticipation""]",,,2026-08-02T13:09:14.389400+00:00,2587,17,2604,2393.73,claude-opus-4-6,anthropic
+9,Have been looking for the best logical cloud based lists for many years.,"[""Anticipation""]",,,2026-08-02T13:09:16.302309+00:00,2633,12,2645,1908.16,claude-opus-4-6,anthropic
+10,only 6/15 meet new ppl was real the rest was chat bots.. reporting the Spam is ignored as well...,"[""Disgust"", ""Anger""]",,,2026-08-02T13:09:18.914919+00:00,2600,16,2616,2607.96,claude-opus-4-6,anthropic
+11,Why does a navigation app need access to my contacts and messages and make phone calls and record video and turn off my Do Not Disturb etc etc???,"[""Disgust"", ""Anger"", ""Surprise""]",,,2026-08-02T13:09:21.203441+00:00,2687,20,2707,2283.9,claude-opus-4-6,anthropic
+12,For call recording After Turning it ON From Accessibility it keep asking to turn it ON again in the next call.,"[""Sadness""]",,,2026-08-02T13:09:24.142616+00:00,2704,12,2716,2934.47,claude-opus-4-6,anthropic
+13,Minimalistic but functional.,"[""Joy""]",,,2026-08-02T13:09:26.417028+00:00,2615,10,2625,2269.71,claude-opus-4-6,anthropic
+14,"Lovely app but unfortunately it doesn't play videos on profiles and that's really bad Please upgrade the app so short videos uploaded on profiles can play Also, secret chats should not allow screenshots of any sort","[""Joy"", ""Sadness"", ""Anticipation""]",,,2026-08-02T13:09:29.102228+00:00,2674,20,2694,2680.56,claude-opus-4-6,anthropic
+15,"I have my launcher pro, but not my weather pro.","[""Sadness""]",,,2026-08-02T13:09:31.090427+00:00,2637,12,2649,1983.59,claude-opus-4-6,anthropic
+16,"At first - probably around 2019 the app did not hold long phone calls; however, along these past few years WhatsApp has grown and has been more reliable on calls photos and videos sharing.","[""Trust""]",,,2026-08-02T13:09:33.779234+00:00,2700,10,2710,2684.14,claude-opus-4-6,anthropic
+17,Absolutely ridiculous routing.,"[""Anger"", ""Disgust""]",,,2026-08-02T13:09:36.173332+00:00,2630,16,2646,2389.58,claude-opus-4-6,anthropic

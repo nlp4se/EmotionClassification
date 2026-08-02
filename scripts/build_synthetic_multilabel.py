@@ -19,9 +19,11 @@ def main() -> None:
     parser.add_argument("--genai", default=None, help="Claude | Gemini | GPT | Mistral")
     parser.add_argument("--n-per-emotion", type=int, default=None)
     parser.add_argument("--out", default="Datasets/synthetic_multilabel.csv")
+    parser.add_argument("--config", default="configs/default.yaml")
+    parser.add_argument("--models-config", default="configs/models.yaml")
     args = parser.parse_args()
 
-    cfg = load_default_config()
+    cfg = load_default_config(args.config, args.models_config)
     emotions = cfg["data"]["generation_emotions"]
     all_emotions = cfg["data"]["emotions"]
     synth = load_synthetic_dir(cfg["data"]["synthetic_dir"], emotions)

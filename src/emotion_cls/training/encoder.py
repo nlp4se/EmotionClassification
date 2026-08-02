@@ -88,6 +88,8 @@ class MultilabelTrainer(Trainer):
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         labels = inputs.pop("labels")
         outputs = model(**inputs)
+        if self.loss_fn is not None:
+            self.loss_fn.to(outputs.logits.device)
         loss = self.loss_fn(outputs.logits, labels.float())
         return (loss, outputs) if return_outputs else loss
 

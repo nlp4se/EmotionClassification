@@ -1,0 +1,104 @@
+{
+  "run_id": "c7c3fe54-e03d-4fd1-9f63-7eebeb9655e8",
+  "name": "generate:gemini:few_shot_guidelines_dataset:Fear",
+  "started_at": "2026-08-02T12:44:41.913298+00:00",
+  "repo_root": "/home/quim-motger/EmotionClassification",
+  "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "config": {
+    "project": {
+      "seed": 42,
+      "output_dir": "outputs_smoke",
+      "models_dir": "models_smoke"
+    },
+    "data": {
+      "ground_truth": "Datasets/smoke/ground_truth_smoke.csv",
+      "synthetic_dir": "Datasets/smoke",
+      "guidelines": "Datasets/guidelines/Annotation Guidelines.txt",
+      "text_column": "sentence",
+      "review_column": "review",
+      "emotions": [
+        "Joy",
+        "Trust",
+        "Fear",
+        "Surprise",
+        "Sadness",
+        "Disgust",
+        "Anger",
+        "Anticipation",
+        "Neutral"
+      ],
+      "generation_emotions": [
+        "Fear",
+        "Joy"
+      ]
+    },
+    "evaluation": {
+      "n_folds": 2,
+      "max_labels": 3,
+      "metrics": [
+        "precision",
+        "recall",
+        "f1"
+      ],
+      "averages": [
+        "micro",
+        "macro",
+        "weighted"
+      ],
+      "subset_accuracy": true,
+      "primary_metric": "macro_f1"
+    },
+    "training": {
+      "encoder": "distilbert-base-cased",
+      "head": "multilabel",
+      "epochs": 1,
+      "learning_rate": 2e-05,
+      "train_batch_size": 8,
+      "eval_batch_size": 8,
+      "max_length": 64,
+      "weight_decay": 0.01,
+      "warmup_ratio": 0.0,
+      "gradient_accumulation_steps": 1,
+      "fp16": false,
+      "early_stopping_patience": 1
+    },
+    "imbalance": {
+      "method": "none",
+      "reduction": "mean",
+      "focal_gamma": 2.0,
+      "undersample_cutoff": null,
+      "aug_inject_n": null,
+      "synthetic_ml_path": null
+    },
+    "decoding": {
+      "temperature": 0.0,
+      "temperature_grid": [
+        0.0
+      ],
+      "strategy": "zero_shot",
+      "few_shot_k": 2
+    },
+    "augmentation": {
+      "embedder": "sentence-transformers/all-MiniLM-L6-v2",
+      "sample_n_per_cell": 5,
+      "default_generator": "claude",
+      "default_strategy": "few_shot_guidelines_dataset",
+      "temperature": 0.8
+    },
+    "experiment": {
+      "resume": true,
+      "flush_every": 1,
+      "ollama_pull_if_missing": true,
+      "ollama_remove_after_use": false
+    }
+  },
+  "extra": {
+    "emotion": "Fear",
+    "decoder": "gemini",
+    "strategy": "few_shot_guidelines_dataset",
+    "target": 6,
+    "human_pos": 5,
+    "output": "/home/quim-motger/EmotionClassification/Datasets/smoke/generated/gemini/few_shot_guidelines_dataset/generated_gemini_fear_reviews_few_shot_guidelines_dataset.csv"
+  }
+}

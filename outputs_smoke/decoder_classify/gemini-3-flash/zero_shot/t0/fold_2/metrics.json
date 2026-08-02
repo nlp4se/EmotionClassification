@@ -1,0 +1,64 @@
+{
+  "subset_accuracy": 0.47058823529411764,
+  "micro_precision": 0.75,
+  "micro_recall": 0.6818181818181818,
+  "micro_f1": 0.7142857142857143,
+  "macro_precision": 0.6259259259259259,
+  "macro_recall": 0.6481481481481481,
+  "macro_f1": 0.617283950617284,
+  "weighted_precision": 0.6454545454545454,
+  "weighted_recall": 0.6818181818181818,
+  "weighted_f1": 0.6464646464646465,
+  "per_emotion": {
+    "Joy": {
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "f1": 0.3333333333333333
+    },
+    "Trust": {
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6666666666666666
+    },
+    "Fear": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "Surprise": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "Sadness": {
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.8888888888888888
+    },
+    "Disgust": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "Anger": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "Anticipation": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "Neutral": {
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.6666666666666666
+    }
+  },
+  "_meta": {
+    "fold": 2,
+    "finished_at": "2026-08-02T13:08:43.992276+00:00",
+    "elapsed_s": 67.16774637624621
+  }
+}

@@ -1,0 +1,87 @@
+# Minimal-footprint config for end-to-end smoke testing (scripts/run_poc_experiments.sh).
+#
+# Same schema as configs/default.yaml but pointed at a tiny label-diverse subset
+# (Datasets/smoke/ground_truth_smoke.csv, built by scripts/make_smoke_subset.py)
+# with 2-fold CV, 1 epoch, short sequences, and outputs fully isolated under
+# outputs_smoke/ + Datasets/smoke/ so nothing collides with a real run.
+
+project:
+  seed: 42
+  output_dir: outputs_smoke
+  models_dir: models_smoke
+
+data:
+  ground_truth: Datasets/smoke/ground_truth_smoke.csv
+  synthetic_dir: Datasets/smoke
+  guidelines: Datasets/guidelines/Annotation Guidelines.txt
+  text_column: sentence
+  review_column: review
+  emotions:
+    - Joy
+    - Trust
+    - Fear
+    - Surprise
+    - Sadness
+    - Disgust
+    - Anger
+    - Anticipation
+    - Neutral
+  # Kept small so `generate` / `generate-parity` only need a couple of LLM calls.
+  generation_emotions:
+    - Fear
+    - Joy
+
+evaluation:
+  n_folds: 2
+  max_labels: 3
+  metrics:
+    - precision
+    - recall
+    - f1
+  averages:
+    - micro
+    - macro
+    - weighted
+  subset_accuracy: true
+  primary_metric: macro_f1
+
+training:
+  encoder: distilbert-base-cased
+  head: multilabel
+  epochs: 1
+  learning_rate: 2.0e-5
+  train_batch_size: 8
+  eval_batch_size: 8
+  max_length: 64
+  weight_decay: 0.01
+  warmup_ratio: 0.0
+  gradient_accumulation_steps: 1
+  fp16: false
+  early_stopping_patience: 1
+
+imbalance:
+  method: none
+  reduction: mean
+  focal_gamma: 2.0
+  undersample_cutoff: null
+  aug_inject_n: null
+  synthetic_ml_path: null
+
+decoding:
+  temperature: 0.0
+  temperature_grid: [0.0]
+  strategy: zero_shot
+  few_shot_k: 2
+
+augmentation:
+  embedder: sentence-transformers/all-MiniLM-L6-v2
+  sample_n_per_cell: 5
+  default_generator: claude
+  default_strategy: few_shot_guidelines_dataset
+  temperature: 0.8
+
+experiment:
+  resume: true
+  flush_every: 1
+  ollama_pull_if_missing: true
+  ollama_remove_after_use: false
