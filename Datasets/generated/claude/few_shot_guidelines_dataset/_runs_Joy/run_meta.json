@@ -110,7 +110,7 @@
     "human_pos": 371,
     "output": "/home/quim-motger/EmotionClassification/Datasets/generated/claude/few_shot_guidelines_dataset/generated_claude_joy_reviews_few_shot_guidelines_dataset.csv"
   },
-  "finished_at": "2026-07-24T19:17:36.849463+00:00",
+  "finished_at": "2026-08-02T21:23:33.611874+00:00",
   "status": "completed",
   "usage_totals": {
     "prompt_tokens": null,

@@ -54,10 +54,16 @@ training:
   eval_batch_size: 8
   max_length: 64
   weight_decay: 0.01
-  warmup_ratio: 0.0
+  warmup_ratio: 0.1
+  adam_epsilon: 1.0e-6
   gradient_accumulation_steps: 1
   fp16: false
   early_stopping_patience: 1
+
+# Off for smoke: the 35-row dataset is too small to carve out a meaningful
+# holdout on top of the already-thin 2-fold CV split.
+tuning:
+  enabled: false
 
 imbalance:
   method: none
@@ -72,6 +78,9 @@ decoding:
   temperature_grid: [0.0]
   strategy: zero_shot
   few_shot_k: 2
+  # Small on purpose: with only ~17 val sentences per fold, batch_size=4
+  # still exercises multiple batches per fold instead of one batch = one fold.
+  batch_size: 4
 
 augmentation:
   embedder: sentence-transformers/all-MiniLM-L6-v2

@@ -121,6 +121,32 @@ def train_encoder(
             click.echo(f"Binary ensemble folds done: {len(results)}")
 
 
+@main.command("tune-encoder")
+@click.option("--encoder", required=True, help="Key from configs/models.yaml or raw HF id")
+@click.option("--dry-run", is_flag=True)
+@click.option("--no-resume", is_flag=True, help="Ignore a previously tuned result and re-search from scratch")
+@click.pass_context
+def tune_encoder(
+    ctx: click.Context,
+    encoder: str,
+    dry_run: bool,
+    no_resume: bool,
+) -> None:
+    """Grid-search learning_rate for one encoder against the tuning holdout.
+
+    Never touches the CV test folds (see `tuning_holdout_mask`). Writes
+    outputs/tuning/<encoder>/learning_rate.json, which train-encoder then
+    picks up automatically for that encoder -- no extra flags needed.
+    """
+    cfg = _apply_overrides(ctx.obj["cfg"], {"training.encoder": encoder})
+    from emotion_cls.training.encoder import tune_encoder_lr
+
+    resume = bool(cfg.get("experiment", {}).get("resume", True)) and not no_resume
+    result = tune_encoder_lr(cfg, dry_run=dry_run, resume=resume)
+    if not dry_run and result:
+        click.echo(f"Best learning_rate: {result['best_learning_rate']:g} (macro_f1={result['best_macro_f1']:.4f})")
+
+
 @main.command("classify-decoder")
 @click.option("--decoder", required=True, help="Key from configs/models.yaml decoders")
 @click.option(
@@ -135,6 +161,12 @@ def train_encoder(
     help="Decoding temperature (tuned factor for RQ2; default from configs/default.yaml)",
 )
 @click.option("--folds", type=int, default=None)
+@click.option(
+    "--batch-size",
+    type=int,
+    default=None,
+    help="Sentences classified per LLM call (default from configs/default.yaml)",
+)
 @click.option("--dry-run", is_flag=True)
 @click.option("--no-resume", is_flag=True, help="Ignore saved predictions and re-run from scratch")
 @click.option(
@@ -149,6 +181,7 @@ def classify_decoder(
     strategy: str | None,
     temperature: float | None,
     folds: int | None,
+    batch_size: int | None,
     dry_run: bool,
     no_resume: bool,
     unload_ollama: bool,
@@ -159,6 +192,7 @@ def classify_decoder(
         {
             "decoding.strategy": strategy,
             "decoding.temperature": temperature,
+            "decoding.batch_size": batch_size,
             "evaluation.n_folds": folds,
             "experiment.resume": False if no_resume else None,
         },

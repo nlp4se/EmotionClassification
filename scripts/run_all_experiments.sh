@@ -28,10 +28,12 @@ STRATEGY="${STRATEGY:-few_shot_guidelines_dataset}"
 BEST_ENC="${BEST_ENC:-}"          # empty => auto-pick after RQ1 multilabel
 SYNTH_CSV="${SYNTH_CSV:-Datasets/synthetic_multilabel_best.csv}"
 N_PER_EMOTION="${N_PER_EMOTION:-350}"
+RQ2_BATCH_SIZE="${RQ2_BATCH_SIZE:-10}" # sentences classified per LLM call in RQ2 (API + OSS)
 SKIP_RQ2_OSS="${SKIP_RQ2_OSS:-0}" # set 1 to skip local Ollama classify
 SKIP_RQ2_API="${SKIP_RQ2_API:-0}"
 SKIP_RQ4_GEN="${SKIP_RQ4_GEN:-0}"
 SKIP_RQ1_BINARY="${SKIP_RQ1_BINARY:-0}"
+SKIP_RQ1_TUNING="${SKIP_RQ1_TUNING:-0}" # set 1 to train at the shared default LR only (no per-encoder search)
 SKIP_RQ3="${SKIP_RQ3:-0}"
 
 ENCODERS=(
@@ -42,8 +44,13 @@ ENCODERS=(
   xlnet-base-cased xlnet-large-cased
 )
 DECODERS_OSS=(deepseek-r1-8b mistral gpt-oss-20b gemma3-4b llama3.1-8b qwen3-8b)
-DECODERS_API=(gpt-5.3-chat gemini-3-flash claude-opus-4-6 mistral-large-2512)
-GENERATORS=(claude gemini openai mistral-large)
+DECODERS_API=(gpt-5.3-chat gemini-3-flash claude-haiku-4-5 mistral-large-2512)
+# RQ4 augmentation generator is Claude only, by design: the paper's protocol is a
+# small preliminary comparison to pick the generator, then full-parity generation
+# with just the winner for efficiency. That comparison already happened and Claude
+# won, so the pipeline goes straight to full-parity generation with Claude -- no
+# need to re-spend on gemini/openai/mistral-large's full generation every run.
+GENERATORS=(claude)
 STRATEGIES=(zero_shot few_shot_guidelines few_shot_guidelines_dataset)
 TEMPS=(0.0 0.3 0.7)
 IMBALANCE_LOSSES=(none bce_pos_weight bce_weight focal adaptive_focal)
@@ -140,17 +147,8 @@ sync_generated_into_datasets() {
 }
 
 choose_genai_for_build() {
-  # Prefer Claude if present; else first available provider folder with CSVs
-  for pair in "Claude:Claude" "Gemini:Gemini" "OpenAi:GPT" "Mistral:Mistral"; do
-    folder="${pair%%:*}"
-    genai="${pair##*:}"
-    if compgen -G "Datasets/$folder/*/*.csv" > /dev/null || compgen -G "Datasets/$folder/*/*/*.csv" > /dev/null; then
-      if find "Datasets/$folder" -type f -name '*.csv' | head -1 | grep -q .; then
-        echo "$genai"
-        return 0
-      fi
-    fi
-  done
+  # GENERATORS is Claude-only by design (see its declaration above) -- no
+  # fallback search needed, there's only ever one candidate.
   echo "Claude"
 }
 
@@ -177,7 +175,7 @@ if [[ "$SKIP_RQ2_API" != "1" ]]; then
       for s in "${STRATEGIES[@]}"; do
         for t in "${TEMPS[@]}"; do
           echo "===== API $d | $s | T=$t $(date -Is) ====="
-          if emotion-cls classify-decoder --decoder "$d" --strategy "$s" --temperature "$t"; then
+          if emotion-cls classify-decoder --decoder "$d" --strategy "$s" --temperature "$t" --batch-size "$RQ2_BATCH_SIZE"; then
             classify_error_rate_ok "$d" "$s" "$t" \
               || echo "WARN: API $d | $s | T=$t has a >50% sentence error rate (check the key?), continuing"
           else
@@ -206,6 +204,27 @@ if [[ "$SKIP_RQ4_GEN" != "1" ]]; then
   ) >logs/rq4_generate_parity.log 2>&1 &
   GEN_PID=$!
   log "RQ4 generate background PID=$GEN_PID"
+fi
+
+############################################
+phase "1a) RQ1 per-encoder learning-rate tuning (GPU)"
+############################################
+# Grid-searches learning_rate per encoder against a held-out slice excluded
+# from the real CV (tuning_holdout_mask), then writes
+# outputs/tuning/<encoder>/learning_rate.json. train-encoder picks this up
+# automatically for both the multilabel and binary heads below -- no flags
+# needed. Motivated by DeBERTa-v3 needing a non-default LR just to avoid a
+# training collapse at the shared default: if one architecture needed that,
+# others may be quietly under-tuned at it too.
+if [[ "$SKIP_RQ1_TUNING" != "1" ]]; then
+  for enc in "${ENCODERS[@]}"; do
+    log "===== TUNE $enc ====="
+    run_logged logs/rq1_tuning_all.log \
+      emotion-cls tune-encoder --encoder "$enc"
+  done
+  log "RQ1 tuning DONE"
+else
+  log "SKIP RQ1 tuning (training at the shared default learning_rate)"
 fi
 
 ############################################
@@ -264,7 +283,7 @@ PY
         fi
         if run_logged logs/rq2_decoder_oss.log \
           emotion-cls classify-decoder --decoder "$d" --strategy "$s" --temperature "$t" \
-          "${unload_flag[@]}"
+          --batch-size "$RQ2_BATCH_SIZE" "${unload_flag[@]}"
         then
           classify_error_rate_ok "$d" "$s" "$t" || {
             msg="OSS $d | $s | T=$t has a >50% sentence error rate, continuing"

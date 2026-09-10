@@ -26,10 +26,23 @@ encoders:
     hub_id: microsoft/deberta-v3-base
     family: DeBERTa-v3
     size: base
+    # At the shared default learning_rate (2e-5) DeBERTa-v3 converges to a
+    # trivial majority-class prediction (verified: predicts the same fixed
+    # 3 labels for ~100% of validation rows, macro_f1 collapses to ~0.13).
+    # 5e-6 -- in line with Microsoft's own DeBERTa fine-tuning recipes,
+    # notably lower than typical BERT/RoBERTa LRs -- fixes it (macro_f1
+    # ~0.36 on the same fold, real per-instance prediction diversity).
+    training_overrides:
+      learning_rate: 5.0e-6
   deberta-v3-large:
     hub_id: microsoft/deberta-v3-large
     family: DeBERTa-v3
     size: large
+    # 5e-6 (same as deberta-v3-base) still collapsed on 6/10 folds -- larger
+    # parameter count appears more prone to the same degenerate-optimum
+    # failure. Dropping further to 1e-6.
+    training_overrides:
+      learning_rate: 1.0e-6
   xlnet-base-cased:
     hub_id: xlnet-base-cased
     family: XLNet
@@ -89,9 +102,16 @@ decoders:
     access: proprietary
     provider: Google
     api_key_env: GEMINI_API_KEY
-  claude-opus-4-6:
+  claude-haiku-4-5:
+    # Switched from claude-opus-4-6 for cost (~80% cheaper: $1/$5 per M
+    # in/out vs Opus's $5/$25). claude-sonnet-5 was considered first and
+    # rejected: it rejects `temperature` AND `top_p` outright ("deprecated
+    # for this model"), which would make RQ2's temperature grid a no-op for
+    # Claude. Haiku 4.5 accepts temperature normally -- verified live.
+    # Made before any real RQ2 data was collected under the Opus key, so
+    # nothing to reconcile/rerun.
     backend: anthropic
-    model_id: claude-opus-4-6
+    model_id: claude-haiku-4-5-20251001
     access: proprietary
     provider: Anthropic
     api_key_env: ANTHROPIC_API_KEY
@@ -110,11 +130,11 @@ augmentation_generators:
     api_key_env: ANTHROPIC_API_KEY
   gemini:
     backend: gemini
-    model_id: gemini-3-flash
+    model_id: gemini-3.5-flash
     api_key_env: GEMINI_API_KEY
   openai:
     backend: openai
-    model_id: gpt-5.3-chat
+    model_id: gpt-5.2
     api_key_env: OPENAI_API_KEY
   # NOT `mistral` — that key is the open-source Ollama decoder
   mistral-large:

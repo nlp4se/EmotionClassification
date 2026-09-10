@@ -1,8 +1,29 @@
 # Emotion Classification from Mobile App Reviews
 
-Replication package accompanying the study on encoder-only and decoder-only large language models for multi-label emotion classification of mobile app reviews, including data-imbalance mitigation and synthetic data augmentation.
+Code, data and experiment configurations for encoder-only and decoder-only large language models applied to multi-label emotion classification of mobile app reviews, including data-imbalance mitigation and synthetic data augmentation.
 
 The human-labelled ground truth and annotation guidelines are those introduced in [Motger et al. (2025)](https://arxiv.org/abs/2505.23452).
+
+## Pretrained models
+
+The best encoder-only configurations found by this project's experiments, refit on the full
+training pool (all cross-validation folds combined) plus the same generative-augmentation
+synthetic pool used in the imbalance-mitigation sweep, are published on the Hugging Face Hub:
+
+| Model | Formulation | Macro-F1 (10-fold CV) | Link |
+|---|---|---|---|
+| `emotion-roberta-large-multilabel-genai-bce` | Multi-label (shared head), RoBERTa-large, generative augmentation ($n{=}100$) + BCE positive weighting | 0.591 ± 0.054 | [huggingface.co/quim-motger/emotion-roberta-large-multilabel-genai-bce](https://huggingface.co/quim-motger/emotion-roberta-large-multilabel-genai-bce) |
+| `emotion-bert-base-binary-ensemble` | Binary ensemble (9 independent classifiers), BERT-base, generative augmentation ($n{=}100$) + focal loss | 0.530 ± 0.074 | [huggingface.co/quim-motger/emotion-bert-base-binary-ensemble](https://huggingface.co/quim-motger/emotion-bert-base-binary-ensemble) |
+
+The binary-ensemble repo holds nine independent single-label checkpoints, one subfolder per
+emotion (`Joy/`, `Trust/`, ... `Neutral/`) — load each with
+`AutoModelForSequenceClassification.from_pretrained(repo_id, subfolder="Joy")`. See each
+model's card for the full decision rule, usage example, and training recipe.
+
+Both were produced by `scripts/train_final_model.py` and
+`scripts/train_final_binary_ensemble.py`, which refit the winning imbalance-mitigation configuration on the
+full training pool and push directly to the Hub (`--push --repo-id ...`); re-run either to
+reproduce or update the published checkpoints.
 
 ## Requirements
 
@@ -28,8 +49,7 @@ Environment variables are documented in `.env.example`.
 | `src/emotion_cls/` | Source package and `emotion-cls` CLI |
 | `Datasets/` | Ground-truth CSV, annotation guidelines, and synthetic review corpora |
 | `scripts/` | Auxiliary data-preparation scripts |
-| `paper/IST_Emotions/` | Manuscript sources |
-| `legacy/` | Earlier exploratory notebooks and scripts |
+| `human_eval/` | Human-as-judge validation materials (annotation files, not experiment code) |
 | `outputs/` | Experiment outputs (created at runtime) |
 | `models/` | Fine-tuned checkpoints (created at runtime; gitignored) |
 
@@ -68,10 +88,10 @@ Prompts are built from `Datasets/guidelines/Annotation Guidelines.txt` (the offi
 ```bash
 emotion-cls classify-decoder --decoder gemma3-4b --strategy zero_shot
 emotion-cls classify-decoder --decoder gemma3-4b --strategy zero_shot --temperature 0.3
-emotion-cls classify-decoder --decoder claude-opus-4-6 --strategy few_shot_guidelines_dataset
+emotion-cls classify-decoder --decoder claude-haiku-4-5 --strategy few_shot_guidelines_dataset
 ```
 
-Temperature is a tunable RQ2 factor (`--temperature`; default `0.0` from `configs/default.yaml`).
+Temperature is a tunable decoding factor (`--temperature`; default `0.0` from `configs/default.yaml`).
 Grid candidates are listed under `decoding.temperature_grid` (`0.0`, `0.3`, `0.7`).
 Each temperature writes to its own resumable directory
 `outputs/decoder_classify/<decoder>/<strategy>/t<temp>/`.
@@ -173,6 +193,6 @@ emotion-cls classify-decoder --decoder gemma3-4b --strategy zero_shot
 
 ## Licence and citation
 
-Please cite the associated publication when using this package, and the ground-truth dataset paper:
+Please cite the ground-truth dataset paper when using this package:
 
-> Motger, Q., Oriol, M., Tiessler, M., Franch, X., & Marco, J. (2025). *What About Emotions? Guiding Fine-Grained Emotion Extraction from Mobile App Reviews*. arXiv:2505.23452.
+> Q. Motger, M. Oriol, M. Tiessler, X. Franch and J. Marco, *"What About Emotions? Guiding Fine-Grained Emotion Extraction from Mobile App Reviews,"* 2025 IEEE 33rd International Requirements Engineering Conference (RE), Valencia, Spain, 2025, pp. 6-18, doi: 10.1109/RE63999.2025.00012.

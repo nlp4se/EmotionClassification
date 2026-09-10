@@ -1,0 +1,8 @@
+{
+  "prompt_tokens": null,
+  "completion_tokens": null,
+  "total_tokens": null,
+  "total_latency_ms": 0.0,
+  "n_llm_calls": 0,
+  "updated_at": "2026-08-02T20:48:04.897164+00:00"
+}

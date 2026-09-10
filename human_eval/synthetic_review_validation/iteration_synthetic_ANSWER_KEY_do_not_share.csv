@@ -1,0 +1,101 @@
+row_id,sentence,target_emotion,generator,strategy,generated_at,Joy,Trust,Fear,Surprise,Sadness,Disgust,Anger,Anticipation,Neutral
+S001,"I'm trying to understand though — when you archive a note, does it still count toward the storage limit or is it stored separately?",Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:09:32.170813+00:00,0,0,0,0,0,0,0,1,0
+S002,"Unfortunately, the sync feature between my phone and tablet has completely stopped working.",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:48:25.870744+00:00,0,0,0,0,1,0,0,0,0
+S003,I hate that this messaging app randomly logs me out and loses all my chat history.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:05:05.464201+00:00,0,0,0,0,0,0,1,0,0
+S004,"The new update sadly requires constant internet connection, making it completely useless on remote trails where I need it most.",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:47:52.063333+00:00,0,0,0,0,1,0,0,0,0
+S005,That was really odd and not what I expected from such a popular platform.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:43:24.919649+00:00,0,0,0,1,0,0,0,0,0
+S006,"However, I was surprised that after editing a photo the app saved it in a completely different folder that I didn't even know existed on my phone instead of my camera roll.",Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:38:05.867716+00:00,0,0,0,1,0,0,0,0,0
+S007,I set up automatic backups of all my photos to this app because I know my memories are safe here.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:19:56.485347+00:00,0,1,0,0,0,0,0,0,0
+S008,I wonder if they're planning to add a dark mode in future updates?,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:12:20.990857+00:00,0,0,0,0,0,0,0,1,0
+S009,Discovering new artists through its recommendations has been so exciting!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S010,Absolutely love this app!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S011,"After trying dozens of meditation apps, this is the one that finally stuck with me.",Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:22:09.930028+00:00,0,1,0,0,0,0,0,0,0
+S012,I'm scared I've lost months of important documents and notes that I can't recover.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:30:19.731624+00:00,0,0,1,0,0,0,0,0,0
+S013,I am furious that a so-called professional company can release such broken software.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:08:14.143230+00:00,0,0,0,0,0,0,1,0,0
+S014,I'm extremely worried that my personal pictures could be leaked or shared publicly.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:25:37.830516+00:00,0,0,1,0,0,0,0,0,0
+S015,"The app supports multiple languages including English, Spanish, and French.",Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:19:45.172338+00:00,0,0,0,0,0,0,0,0,1
+S016,The animated backgrounds for each weather condition are a joy to look at.,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S017,I absolutely HATE that they took away features I was already using for free.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:05:37.836964+00:00,0,0,0,0,0,0,1,0,0
+S018,I absolutely HATE this garbage update you pushed out.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:08:14.143210+00:00,0,0,0,0,0,0,1,0,0
+S019,Best fitness tracker I've personally used compared to all the popular alternatives out there.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:21:40.338299+00:00,0,1,0,0,0,0,0,0,0
+S020,I'm genuinely worried it might damage my battery or even cause a fire.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:31:20.168558+00:00,0,0,1,0,0,0,0,0,0
+S021,I lost an entire batch of edited wedding photos and I'm devastated.,Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:47:14.586125+00:00,0,0,0,0,1,0,0,0,0
+S022,"I'm not sure how the shared folder permissions work though — does giving someone edit access also let them delete files, or is that a separate permission level?",Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:12:05.309327+00:00,0,0,0,0,0,0,0,1,0
+S023,I'm afraid my login credentials are being exposed to third parties through this vulnerability.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:31:37.619644+00:00,0,0,1,0,0,0,0,0,0
+S024,Really? You want my money before I even know if this works for me?,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:36:33.344811+00:00,0,0,0,1,0,0,0,0,0
+S025,These idiots don't deserve a single star.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:05:37.836983+00:00,0,0,0,0,0,0,1,0,0
+S026,I use it daily to meal prep for my family and it has made cooking so much less stressful for me.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:23:12.203684+00:00,0,1,0,0,0,0,0,0,0
+S027,However I was taken aback when the app showed my driver was 2 minutes away but then suddenly the map refreshed and he was actually 25 minutes away on the other side of town.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:40:52.615206+00:00,0,0,0,1,0,0,0,0,0
+S028,The home screen displays five main categories.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:17:47.802974+00:00,0,0,0,0,0,0,0,0,1
+S029,Brilliant calendar app that integrates seamlessly with all my other tools.,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S030,I HATE that they pretend to care while doing absolutely nothing to fix the constant login failures!,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:08:29.759040+00:00,0,0,0,0,0,0,1,0,0
+S031,Amazing app for budgeting!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S032,"The latest update moved all the best filters behind a paywall, and now the free version feels empty and disappointing 😞",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:46:40.369896+00:00,0,0,0,0,1,0,0,0,0
+S033,Would love to see a conversation practice mode where you can speak with an AI tutor in real time.,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:09:32.170815+00:00,0,0,0,0,0,0,0,1,0
+S034,I'm really worried that this app is secretly collecting my private information and selling it to third parties.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:27:10.806834+00:00,0,0,1,0,0,0,0,0,0
+S035,The app displays temperature in both Celsius and Fahrenheit.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:16:05.934910+00:00,0,0,0,0,0,0,0,0,1
+S036,Such a delightful experience using this meditation app every morning.,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S037,I will never use an app that takes my private photos and stores them on servers I have no control over.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:55:00.516912+00:00,0,0,0,0,0,1,0,0,0
+S038,I refuse to keep this installed on my phone when it clearly doesn't care about user safety.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:58:53.863368+00:00,0,0,0,0,0,1,0,0,0
+S039,"Oddly enough, it counted me as having walked 15,000 steps while I was sitting on the couch watching TV all evening.",Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:45:16.898284+00:00,0,0,0,1,0,0,0,0,0
+S040,I've used this as my primary recipe organizer for the past year and it has completely transformed how I plan meals for my family.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:17:57.679701+00:00,0,1,0,0,0,0,0,0,0
+S041,"However, the calendar sync feature has regular failures and keeps losing my scheduled appointments, which has caused me to miss important meetings unfortunately.",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:47:14.586130+00:00,0,0,0,0,1,0,0,0,0
+S042,This meditation app asked me to write a full review after I used it for exactly 2 minutes.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:36:55.899229+00:00,0,0,0,1,0,0,0,0,0
+S043,The new update is fantastic!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S044,The latest version is 3.2.1 and was released on March 10th.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:20:12.179743+00:00,0,0,0,0,0,0,0,0,1
+S045,I have important work files that I cannot recover and my deadline is tomorrow please someone help me.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:32:52.440923+00:00,0,0,1,0,0,0,0,0,0
+S046,I moved my entire family group chat here and we all feel safe communicating through it.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:22:58.030979+00:00,0,1,0,0,0,0,0,0,0
+S047,"I'm trying to understand though, when you complete a skill tree does it ever reset or do you need to manually practice old lessons to keep them fresh?",Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:10:57.774987+00:00,0,0,0,0,0,0,0,1,0
+S048,I'm worried someone has hacked into my account and is stealing my personal information please help me secure it.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:33:30.752604+00:00,0,0,1,0,0,0,0,0,0
+S049,I refuse to keep this installed on my phone when it clearly doesn't care about user safety.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:56:58.375281+00:00,0,0,0,0,0,1,0,0,0
+S050,I trust it with all my financial data because of its strong encryption and local storage options.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:19:56.485336+00:00,0,1,0,0,0,0,0,0,0
+S051,I am extremely worried about my privacy being compromised and I don't know how to make my profile private again please help.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:26:51.062346+00:00,0,0,1,0,0,0,0,0,0
+S052,This is the best fitness tracking app I have ever used.,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S053,The encryption and zero-knowledge architecture give me real peace of mind about my data security.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:20:10.849997+00:00,0,1,0,0,0,0,0,0,0
+S054,I was taken aback when it placed me at an advanced level after I answered just two basic vocabulary questions.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:34:22.139265+00:00,0,0,0,1,0,0,0,0,0
+S055,Fantastic workout app with so many exercises and training plans to choose from.,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S056,I would really appreciate it if they added handwriting recognition support for stylus users on tablets.,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:14:01.366610+00:00,0,0,0,0,0,0,0,1,0
+S057,This is a great sleep tracker!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S058,You can't trust a VPN that lies about its core promise.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:56:01.622921+00:00,0,0,0,0,0,1,0,0,0
+S059,This fitness tracker app somehow decided that my 10-minute walk to the grocery store burned 800 calories.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:35:03.403614+00:00,0,0,0,1,0,0,0,0,0
+S060,"The app supports multiple languages including English, Spanish, and French.",Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:14:33.166460+00:00,0,0,0,0,0,0,0,0,1
+S061,"The only thing you'll find here are bots and scammers, not real people.",Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:54:24.131282+00:00,0,0,0,0,0,1,0,0,0
+S062,The app sends reminders at scheduled intervals.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:15:23.119830+00:00,0,0,0,0,0,0,0,0,1
+S063,I feel like I've lost a tool I genuinely relied on.,Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:46:57.956978+00:00,0,0,0,0,1,0,0,0,0
+S064,"The weird thing is the driver was rated 4.9 stars but showed up in a completely different car than what was listed, and the app showed me arriving at my destination while I was still 10 minutes away.",Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:38:29.006891+00:00,0,0,0,1,0,0,0,0,0
+S065,"Unfortunately, the sync feature between devices has completely stopped working since last month.",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:47:52.063323+00:00,0,0,0,0,1,0,0,0,0
+S066,I am absolutely livid and this stupid app nearly made me miss my flight!,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:04:48.551489+00:00,0,0,0,0,0,0,1,0,0
+S067,"The speech recognition crashes every single time I try to do a pronunciation exercise, which is heartbreaking because the rest of the app is so well designed.",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:46:57.956985+00:00,0,0,0,0,1,0,0,0,0
+S068,"These greedy, money-hungry scammers don't deserve a single cent!",Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:03:33.925493+00:00,0,0,0,0,0,0,1,0,0
+S069,This app is fraudulent and should be removed from the app store entirely.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:52:18.932648+00:00,0,0,0,0,0,1,0,0,0
+S070,The latest version is 3.2.1 and was released on June 5th.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:15:23.119823+00:00,0,0,0,0,0,0,0,0,1
+S071,It would be great if they could add a calendar integration so I can see my tasks alongside my schedule.,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:14:19.087595+00:00,0,0,0,0,0,0,0,1,0
+S072,That was completely unexpected and made the whole search useless.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:41:15.992304+00:00,0,0,0,1,0,0,0,0,0
+S073,I'd rather study with pen and paper than subject myself to this garbage.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:55:00.516914+00:00,0,0,0,0,0,1,0,0,0
+S074,It's really disheartening to see such a promising app fall apart like this.,Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:46:40.369905+00:00,0,0,0,0,1,0,0,0,0
+S075,The game includes 50 levels across 5 different worlds.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:18:03.125405+00:00,0,0,0,0,0,0,0,0,1
+S076,The only thing this app does is push premium subscriptions and guilt-trip you into paying — it's nothing more than a glorified cash grab disguised as a health tool.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:52:58.149689+00:00,0,0,0,0,0,1,0,0,0
+S077,I hate this messaging app with every fiber of my being.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:02:23.699054+00:00,0,0,0,0,0,0,1,0,0
+S078,I'm terrified that all my important documents might be permanently lost.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:28:05.633228+00:00,0,0,1,0,0,0,0,0,0
+S079,It is a photo editing application.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:20:25.132096+00:00,0,0,0,0,0,0,0,0,1
+S080,No responsible parent should allow this app anywhere near their children's devices.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:48:45.051421+00:00,0,0,0,0,0,1,0,0,0
+S081,"This is a weather widget, not a surveillance tool.",Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:53:40.969182+00:00,0,0,0,0,0,1,0,0,0
+S082,I would love it if they added the option to create custom filter presets that you could save and reuse across different photos.,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:09:14.300454+00:00,0,0,0,0,0,0,0,1,0
+S083,Woke up to 14 notifications about the same appointment which was bizarre since I only created one entry.,Surprise,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:44:10.322068+00:00,0,0,0,1,0,0,0,0,0
+S084,Someone might have hacked into my payment details and I'm terrified my bank information is compromised.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:29:42.834815+00:00,0,0,1,0,0,0,0,0,0
+S085,I am so happy with this reading app!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S086,"Unfortunately, notifications arrive hours late or sometimes not at all, which has caused me to miss important reminders.",Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:46:40.369898+00:00,0,0,0,0,1,0,0,0,0
+S087,It has genuinely helped me build a consistent mindfulness practice that I look forward to every morning.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:21:20.786060+00:00,0,1,0,0,0,0,0,0,0
+S088,This is such a fun and engaging habit tracker!,Joy,claude-opus-4-6,few_shot_guidelines_dataset,,1,0,0,0,0,0,0,0,0
+S089,I'm terrified that my financial information has been compromised and I don't know what to do.,Fear,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:33:30.752590+00:00,0,0,1,0,0,0,0,0,0
+S090,"I'm trying to understand though, does the premium tier unlock collaborative boards or is that something planned for later?",Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:12:37.507146+00:00,0,0,0,0,0,0,0,1,0
+S091,It displays temperature in both Celsius and Fahrenheit.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:17:23.095989+00:00,0,0,0,0,0,0,0,0,1
+S092,I absolutely HATE this garbage app now.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:06:47.281820+00:00,0,0,0,0,0,0,1,0,0
+S093,I'm curious whether they plan to integrate with Apple Health and Google Fit in upcoming versions.,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:13:10.755575+00:00,0,0,0,0,0,0,0,1,0
+S094,I'm curious whether they plan to integrate sleep quality analysis in a future update.,Anticipation,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:12:05.309313+00:00,0,0,0,0,0,0,0,1,0
+S095,I trust it completely with all my sensitive credentials because of its end-to-end encryption and transparent security audits.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:19:27.832471+00:00,0,1,0,0,0,0,0,0,0
+S096,I don't trust this app with a single cent of my money and neither should anyone else.,Disgust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:52:00.136376+00:00,0,0,0,0,0,1,0,0,0
+S097,I HATE that I wasted my money on this pathetic excuse for an app when free alternatives work ten times better.,Anger,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:08:14.143228+00:00,0,0,0,0,0,0,1,0,0
+S098,I set up automatic backups of all my photos to this app because I trust it completely with my memories.,Trust,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:23:12.203683+00:00,0,1,0,0,0,0,0,0,0
+S099,The premium costs $4.99 per month.,Neutral,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T14:18:55.050327+00:00,0,0,0,0,0,0,0,0,1
+S100,They removed this in version 4.0 and it was the feature that set this app apart from competitors 😩,Sadness,claude-opus-4-6,few_shot_guidelines_dataset,2026-08-02T13:48:09.480285+00:00,0,0,0,0,1,0,0,0,0

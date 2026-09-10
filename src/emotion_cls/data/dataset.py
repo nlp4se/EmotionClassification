@@ -75,6 +75,29 @@ def multilabel_folds(
     yield from mskf.split(X, y)
 
 
+def tuning_holdout_mask(
+    y: np.ndarray,
+    *,
+    n_splits: int = 7,
+    seed: int = 43,
+) -> np.ndarray:
+    """Deterministic boolean mask marking a fixed ~1/n_splits stratified slice
+    reserved for hyperparameter tuning, disjoint from every CV test fold.
+
+    Uses a different splitter seed than ``multilabel_folds`` (project.seed)
+    so the tuning holdout and a fold boundary never accidentally coincide.
+    The same mask (same ``y``, ``n_splits``, ``seed``) is reused by every
+    encoder so all of them tune against -- and are evaluated after excluding
+    -- the identical rows, keeping the comparison fair.
+    """
+    mskf = MultilabelStratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
+    X = np.zeros((y.shape[0], 1))
+    _, holdout_idx = next(mskf.split(X, y))
+    mask = np.zeros(y.shape[0], dtype=bool)
+    mask[holdout_idx] = True
+    return mask
+
+
 def binary_folds(
     y_binary: np.ndarray,
     n_splits: int = 10,

@@ -26,16 +26,17 @@ from transformers import (
     TrainingArguments,
 )
 
-from emotion_cls.config import encoder_hub_id, resolve_path
+from emotion_cls.config import encoder_hub_id, encoder_training_overrides, resolve_path
 from emotion_cls.data.dataset import (
     label_matrix,
     load_ground_truth,
     multilabel_folds,
+    tuning_holdout_mask,
 )
 from emotion_cls.experiment import ExperimentRun, timed
 from emotion_cls.imbalance.sampling import inject_synthetic, undersample_multilabel
 from emotion_cls.losses import build_loss
-from emotion_cls.training.metrics import compute_metrics, top_k_from_logits
+from emotion_cls.training.metrics import compute_metrics, probs_from_logits, threshold_topk, top_k_from_logits
 
 
 def _cleanup_trainer_artifacts(root: Path) -> None:
@@ -72,6 +73,27 @@ def _cleanup_trainer_artifacts(root: Path) -> None:
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
+
+
+def _exclude_tuning_holdout(df: pd.DataFrame, emotions: list[str], cfg: dict[str, Any]) -> pd.DataFrame:
+    """Drop the rows reserved for LR tuning (see `tune-encoder`) from the CV pool.
+
+    Keeps the reported 10-fold CV disjoint from whatever data hyperparameter
+    search looked at, so a tuned learning rate can't optimistically bias the
+    reported metric. Controlled by ``tuning.enabled`` (default on); the same
+    holdout mask (fixed seed) is shared by every encoder for a fair, apples-
+    to-apples comparison.
+    """
+    tuning_cfg = cfg.get("tuning", {})
+    if not bool(tuning_cfg.get("enabled", True)):
+        return df
+    y_full = label_matrix(df, emotions)
+    mask = tuning_holdout_mask(
+        y_full,
+        n_splits=int(tuning_cfg.get("holdout_n_splits", 7)),
+        seed=int(tuning_cfg.get("holdout_seed", 43)),
+    )
+    return df.loc[~mask].reset_index(drop=True)
 
 
 @dataclass
@@ -120,8 +142,10 @@ def run_multilabel_cv(
 ) -> list[FoldResult]:
     emotions = cfg["data"]["emotions"]
     df = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
+    df = _exclude_tuning_holdout(df, emotions, cfg)
     y = label_matrix(df, emotions)
     hub_id = encoder_hub_id(cfg, cfg["training"]["encoder"])
+    overrides = encoder_training_overrides(cfg, cfg["training"]["encoder"])
     max_labels = int(cfg["evaluation"]["max_labels"])
     n_folds = int(cfg["evaluation"]["n_folds"])
     seed = int(cfg["project"]["seed"])
@@ -234,10 +258,16 @@ def run_multilabel_cv(
         args = TrainingArguments(
             output_dir=str(fold_dir),
             num_train_epochs=float(cfg["training"]["epochs"]),
-            learning_rate=float(cfg["training"]["learning_rate"]),
+            learning_rate=float(overrides.get("learning_rate", cfg["training"]["learning_rate"])),
             per_device_train_batch_size=int(cfg["training"]["train_batch_size"]),
             per_device_eval_batch_size=int(cfg["training"]["eval_batch_size"]),
             weight_decay=float(cfg["training"]["weight_decay"]),
+            warmup_ratio=float(cfg["training"].get("warmup_ratio", 0.0)),
+            # HF default (1e-8) is too small for DeBERTa-v3's parameter scale and
+            # reliably blows up to NaN loss after a single optimizer step; 1e-6
+            # (what Microsoft's own DeBERTa fine-tuning scripts use) fixes it and
+            # is a safe, standard value for the other encoder families too.
+            adam_epsilon=float(cfg["training"].get("adam_epsilon", 1e-6)),
             eval_strategy="epoch",
             save_strategy="epoch",
             save_total_limit=1,
@@ -279,9 +309,14 @@ def run_multilabel_cv(
             )
             trainer.train()
             pred_out = trainer.predict(val_ds)
-            preds = top_k_from_logits(pred_out.predictions, k=max_labels)
+            probs = probs_from_logits(pred_out.predictions)
+            preds = threshold_topk(probs, k=max_labels)
             metrics = compute_metrics(label_matrix(val_df, emotions), preds, emotions)
             elapsed = timed() - t0
+
+            # Raw per-emotion probabilities, so the assembly rule (threshold,
+            # cap, fallback) can be revisited later without retraining.
+            np.save(fold_dir / "probs.npy", probs)
 
             # Persist predictions for audit
             pred_rows = []
@@ -305,38 +340,168 @@ def run_multilabel_cv(
     return results
 
 
+def tune_encoder_lr(
+    cfg: dict[str, Any],
+    *,
+    dry_run: bool = False,
+    resume: bool = True,
+) -> dict[str, Any]:
+    """Grid-search ``learning_rate`` for one encoder against the tuning holdout.
+
+    Trains each candidate once on the full CV pool (holdout excluded, exactly
+    like the real run) for the configured epoch budget, scores it on the
+    holdout, and persists the winner to
+    ``outputs/tuning/<encoder>/learning_rate.json``. That file is then read
+    automatically by :func:`emotion_cls.config.encoder_training_overrides`,
+    so a subsequent ``train-encoder`` call picks it up with no extra flags.
+    Never touches the CV test folds -- see ``tuning_holdout_mask``.
+    """
+    emotions = cfg["data"]["emotions"]
+    encoder_key = cfg["training"]["encoder"]
+    hub_id = encoder_hub_id(cfg, encoder_key)
+    tuning_cfg = cfg.get("tuning", {})
+
+    df_full = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
+    y_full = label_matrix(df_full, emotions)
+    mask = tuning_holdout_mask(
+        y_full,
+        n_splits=int(tuning_cfg.get("holdout_n_splits", 7)),
+        seed=int(tuning_cfg.get("holdout_seed", 43)),
+    )
+    train_df = df_full.loc[~mask].reset_index(drop=True)
+    val_df = df_full.loc[mask].reset_index(drop=True)
+    grid = [float(x) for x in tuning_cfg.get("learning_rate_grid", [cfg["training"]["learning_rate"]])]
+
+    out_dir = resolve_path(cfg["project"]["output_dir"]) / "tuning" / encoder_key
+    out_dir.mkdir(parents=True, exist_ok=True)
+    result_path = out_dir / "learning_rate.json"
+
+    if dry_run:
+        print(f"[dry-run] tune-encoder encoder={hub_id} grid={grid} n_train={len(train_df)} n_val={len(val_df)}")
+        return {}
+
+    if resume and result_path.exists():
+        existing = json.loads(result_path.read_text(encoding="utf-8"))
+        print(f"[resume] tune-encoder {encoder_key}: already tuned, best_lr={existing['best_learning_rate']:g}")
+        return existing
+
+    tokenizer = AutoTokenizer.from_pretrained(hub_id)
+    max_labels = int(cfg["evaluation"]["max_labels"])
+    max_length = int(cfg["training"]["max_length"])
+    train_ds = _tokenize_dataset(train_df, emotions, tokenizer, max_length)
+    val_ds = _tokenize_dataset(val_df, emotions, tokenizer, max_length)
+    y_train = torch.tensor(label_matrix(train_df, emotions), dtype=torch.float32)
+    loss_fn = build_loss("none", y_train, reduction="mean")
+    seed = int(cfg["project"]["seed"])
+
+    print(f"tune-encoder {encoder_key}: n_train={len(train_df)} n_val={len(val_df)} grid={grid}")
+    trials: list[dict[str, Any]] = []
+    for lr in grid:
+        trial_dir = out_dir / f"trial_lr{lr:g}"
+        model = AutoModelForSequenceClassification.from_pretrained(
+            hub_id, num_labels=len(emotions), problem_type="multi_label_classification"
+        )
+        args = TrainingArguments(
+            output_dir=str(trial_dir),
+            num_train_epochs=float(cfg["training"]["epochs"]),
+            learning_rate=lr,
+            per_device_train_batch_size=int(cfg["training"]["train_batch_size"]),
+            per_device_eval_batch_size=int(cfg["training"]["eval_batch_size"]),
+            weight_decay=float(cfg["training"]["weight_decay"]),
+            warmup_ratio=float(cfg["training"].get("warmup_ratio", 0.0)),
+            adam_epsilon=float(cfg["training"].get("adam_epsilon", 1e-6)),
+            eval_strategy="no",
+            save_strategy="no",
+            report_to=[],
+            seed=seed,
+            disable_tqdm=True,
+            logging_strategy="no",
+            fp16=bool(cfg["training"].get("fp16", False)),
+        )
+        t0 = timed()
+        try:
+            trainer = MultilabelTrainer(
+                model=model, args=args, train_dataset=train_ds, eval_dataset=val_ds,
+                processing_class=tokenizer, data_collator=DataCollatorWithPadding(tokenizer), loss_fn=loss_fn,
+            )
+            trainer.train()
+            pred_out = trainer.predict(val_ds)
+            probs = probs_from_logits(pred_out.predictions)
+            preds = threshold_topk(probs, k=max_labels)
+            metrics = compute_metrics(label_matrix(val_df, emotions), preds, emotions)
+            elapsed = timed() - t0
+            trials.append({"learning_rate": lr, "macro_f1": metrics["macro_f1"], "micro_f1": metrics["micro_f1"], "elapsed_s": elapsed})
+            print(f"  lr={lr:g}: macro_f1={metrics['macro_f1']:.4f} micro_f1={metrics['micro_f1']:.4f} ({elapsed:.1f}s)")
+        finally:
+            shutil.rmtree(trial_dir, ignore_errors=True)
+            del model
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
+    best = max(trials, key=lambda t: t["macro_f1"])
+    result = {
+        "encoder": encoder_key,
+        "hub_id": hub_id,
+        "n_train": len(train_df),
+        "n_val": len(val_df),
+        "trials": trials,
+        "best_learning_rate": best["learning_rate"],
+        "best_macro_f1": best["macro_f1"],
+    }
+    ExperimentRun._atomic_write_json(result_path, result)
+    print(f"tune-encoder {encoder_key}: best_lr={best['learning_rate']:g} (macro_f1={best['macro_f1']:.4f}) -> {result_path}")
+    return result
+
+
 def run_binary_ensemble_cv(
     cfg: dict[str, Any],
     *,
     dry_run: bool = False,
     resume: bool = True,
 ) -> list[dict[str, Any]]:
-    """Train one binary classifier per emotion on shared multilabel folds; assemble with top-k."""
+    """Train one binary classifier per emotion on shared multilabel folds; assemble with top-k.
+
+    Imbalance mitigation (loss reweighting, undersampling, generative augmentation) is applied
+    identically to :func:`run_multilabel_cv`, just with a per-emotion K=1 target instead of the
+    shared K=|E| one: each binary classifier reuses the exact same loss classes from
+    ``emotion_cls.losses`` (unchanged formulas), and the same undersample/inject_synthetic calls
+    on the shared training-fold pool before the per-emotion split.
+    """
     emotions = cfg["data"]["emotions"]
     df = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
+    df = _exclude_tuning_holdout(df, emotions, cfg)
     hub_id = encoder_hub_id(cfg, cfg["training"]["encoder"])
+    imb = cfg.get("imbalance", {})
+    method = str(imb.get("method", "none"))
     out_dir = resolve_path(cfg["project"]["output_dir"]) / "encoder_binary" / cfg["training"]["encoder"]
+    if method not in {"none", "baseline", ""}:
+        # "none" keeps the pre-existing flat directory (baseline already computed there);
+        # every other method gets its own subdirectory, mirroring run_multilabel_cv.
+        out_dir = out_dir / method.replace(",", "+")
     out_dir.mkdir(parents=True, exist_ok=True)
     resume = bool(cfg.get("experiment", {}).get("resume", resume))
 
     run = ExperimentRun(
         out_dir,
-        name=f"encoder_binary:{cfg['training']['encoder']}",
+        name=f"encoder_binary:{cfg['training']['encoder']}:{method}",
         cfg=cfg,
         resume=resume,
-        extra_meta={"hub_id": hub_id},
+        extra_meta={"hub_id": hub_id, "imbalance": method},
     )
 
     if dry_run:
-        print(f"[dry-run] binary ensemble encoder={hub_id} folds={cfg['evaluation']['n_folds']} n={len(df)}")
+        print(
+            f"[dry-run] binary ensemble encoder={hub_id} folds={cfg['evaluation']['n_folds']} "
+            f"imbalance={method} n={len(df)}"
+        )
         run.finalize(status="dry_run")
         return []
 
     tokenizer = AutoTokenizer.from_pretrained(hub_id)
-    summary = _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer, run=run, resume=resume)
-    ExperimentRun._atomic_write_json(out_dir / "cv_summary.json", {"folds": summary})
-    run.finalize(status="completed", n_folds=len(summary))
-    return summary
+    fold_results = _assemble_binary_on_multilabel_folds(cfg, hub_id, tokenizer, run=run, resume=resume)
+    _write_cv_summary(fold_results, out_dir / "cv_summary.json", emotions, run=run)
+    run.finalize(status="completed", n_folds=len(fold_results))
+    return [{"fold": r.fold, "metrics": r.metrics} for r in fold_results]
 
 
 def _assemble_binary_on_multilabel_folds(
@@ -346,15 +511,54 @@ def _assemble_binary_on_multilabel_folds(
     *,
     run: ExperimentRun,
     resume: bool = True,
-):
-    """Train binary heads on shared multilabel folds and apply top-k assembly."""
+) -> list[FoldResult]:
+    """Train binary heads on shared multilabel folds and apply top-k assembly.
+
+    Each per-emotion classifier is a single-logit (num_labels=1) sigmoid head trained with
+    BCEWithLogits-family losses from ``emotion_cls.losses`` via ``MultilabelTrainer`` with K=1 --
+    the exact same loss classes/formulas used by ``run_multilabel_cv``, just evaluated on one
+    emotion's target instead of all nine jointly. This keeps "the same imbalance method" literal
+    rather than reimplementing a parallel softmax/cross-entropy variant. Data-level methods
+    (undersample, genai_aug) are applied to the shared per-fold training pool before the
+    per-emotion split, identically to the multi-label path.
+    """
     emotions = cfg["data"]["emotions"]
     df = load_ground_truth(cfg["data"]["ground_truth"], emotions=emotions, text_column=cfg["data"]["text_column"])
+    df = _exclude_tuning_holdout(df, emotions, cfg)
     y = label_matrix(df, emotions)
+    overrides = encoder_training_overrides(cfg, cfg["training"]["encoder"])
     n_folds = int(cfg["evaluation"]["n_folds"])
     seed = int(cfg["project"]["seed"])
     max_labels = int(cfg["evaluation"]["max_labels"])
-    summary = []
+
+    imb = cfg.get("imbalance", {})
+    method = str(imb.get("method", "none"))
+    methods = [m.strip() for m in method.split(",") if m.strip()]
+    methods_norm = []
+    for m in methods:
+        if m.startswith("undersample"):
+            methods_norm.append("undersample")
+        elif m.startswith("genai_aug"):
+            methods_norm.append("genai_aug")
+        else:
+            methods_norm.append(m)
+
+    synthetic_ml = None
+    if "genai_aug" in methods_norm:
+        synth_path = imb.get("synthetic_ml_path")
+        if not synth_path:
+            raise ValueError(
+                "imbalance method 'genai_aug' requires --synthetic-ml-path "
+                "(build it with scripts/build_synthetic_multilabel.py)."
+            )
+        synthetic_ml = pd.read_csv(resolve_path(synth_path), sep=";")
+
+    loss_name = next(
+        (m for m in methods_norm if m in {"none", "bce_pos_weight", "bce_weight", "focal", "adaptive_focal"}),
+        "none",
+    )
+
+    results: list[FoldResult] = []
     out_root = run.out_dir
 
     for fold, (train_idx, val_idx) in enumerate(multilabel_folds(y, n_folds, seed), start=1):
@@ -365,12 +569,22 @@ def _assemble_binary_on_multilabel_folds(
             metrics = run.load_fold_metrics(fold)
             if metrics:
                 clean = {k: v for k, v in metrics.items() if k != "_meta"}
-                summary.append({"fold": fold, "metrics": clean})
+                results.append(FoldResult(fold=fold, metrics=clean))
                 print(f"[resume] skip binary fold {fold}")
                 continue
 
         train_df = df.iloc[train_idx].reset_index(drop=True)
         val_df = df.iloc[val_idx].reset_index(drop=True)
+
+        if "undersample" in methods_norm and imb.get("undersample_cutoff"):
+            train_df = undersample_multilabel(
+                train_df, emotions, int(imb["undersample_cutoff"]), seed=seed + fold
+            )
+        if "genai_aug" in methods_norm and synthetic_ml is not None:
+            train_df = inject_synthetic(
+                train_df, synthetic_ml, emotions, imb.get("aug_inject_n"),
+            )
+
         probs_path = fold_dir / "probs.npy"
         done_path = fold_dir / "emotions_done.json"
 
@@ -386,17 +600,34 @@ def _assemble_binary_on_multilabel_folds(
                 done = []
 
         t0 = timed()
-        run.log_event("fold_started", fold=fold, head="binary", n_val=len(val_df))
+        run.log_event("fold_started", fold=fold, head="binary", n_val=len(val_df), imbalance=method)
 
         for ei, emotion in enumerate(emotions):
             if emotion in done:
                 continue
-            model = AutoModelForSequenceClassification.from_pretrained(hub_id, num_labels=2)
+
+            y_col = torch.tensor(train_df[emotion].astype(float).values, dtype=torch.float32).unsqueeze(1)
+            loss_fn = build_loss(
+                loss_name,
+                y_col,
+                reduction=str(imb.get("reduction", "mean")),
+                focal_gamma=float(imb.get("focal_gamma", 2.0)),
+            )
+
+            model = AutoModelForSequenceClassification.from_pretrained(
+                hub_id, num_labels=1, problem_type="multi_label_classification"
+            )
             train_ds = Dataset.from_dict(
-                {"text": train_df["sentence"].tolist(), "labels": train_df[emotion].astype(int).tolist()}
+                {
+                    "text": train_df["sentence"].tolist(),
+                    "labels": [[float(v)] for v in train_df[emotion].astype(int).tolist()],
+                }
             )
             val_ds = Dataset.from_dict(
-                {"text": val_df["sentence"].tolist(), "labels": val_df[emotion].astype(int).tolist()}
+                {
+                    "text": val_df["sentence"].tolist(),
+                    "labels": [[float(v)] for v in val_df[emotion].astype(int).tolist()],
+                }
             )
 
             def tok(batch):
@@ -408,25 +639,28 @@ def _assemble_binary_on_multilabel_folds(
             args = TrainingArguments(
                 output_dir=str(emotion_dir),
                 num_train_epochs=float(cfg["training"]["epochs"]),
-                learning_rate=float(cfg["training"]["learning_rate"]),
+                learning_rate=float(overrides.get("learning_rate", cfg["training"]["learning_rate"])),
                 per_device_train_batch_size=int(cfg["training"]["train_batch_size"]),
                 per_device_eval_batch_size=int(cfg["training"]["eval_batch_size"]),
+                warmup_ratio=float(cfg["training"].get("warmup_ratio", 0.0)),
+                adam_epsilon=float(cfg["training"].get("adam_epsilon", 1e-6)),
                 report_to=[],
                 save_strategy="epoch",
                 save_total_limit=1,
             )
-            trainer = Trainer(
+            trainer = MultilabelTrainer(
                 model=model,
                 args=args,
                 train_dataset=train_ds,
                 eval_dataset=val_ds,
                 processing_class=tokenizer,
                 data_collator=DataCollatorWithPadding(tokenizer),
+                loss_fn=loss_fn,
             )
             try:
                 trainer.train()
                 logits = trainer.predict(val_ds).predictions
-                probs[:, ei] = torch.softmax(torch.tensor(logits), dim=-1).numpy()[:, 1]
+                probs[:, ei] = torch.sigmoid(torch.tensor(logits)).numpy()[:, 0]
             finally:
                 _cleanup_trainer_artifacts(emotion_dir)
                 del model
@@ -438,24 +672,16 @@ def _assemble_binary_on_multilabel_folds(
             ExperimentRun._atomic_write_json(done_path, done)
             run.log_event("binary_emotion_done", fold=fold, emotion=emotion)
 
-        raw = (probs >= 0.5).astype(int)
-        preds = np.zeros_like(raw)
-        for i in range(len(val_df)):
-            pos = np.where(raw[i] == 1)[0]
-            if len(pos) == 0:
-                pos = np.array([int(np.argmax(probs[i]))])
-            if len(pos) > max_labels:
-                pos = pos[np.argsort(-probs[i, pos])[:max_labels]]
-            preds[i, pos] = 1
+        preds = threshold_topk(probs, k=max_labels)
         metrics = compute_metrics(label_matrix(val_df, emotions), preds, emotions)
         elapsed = timed() - t0
-        summary.append({"fold": fold, "metrics": metrics})
+        results.append(FoldResult(fold=fold, metrics=metrics))
         run.mark_fold_done(fold, metrics, elapsed_s=elapsed)
-        ExperimentRun._atomic_write_json(out_root / "cv_summary.json", {"folds": summary})
+        _write_cv_summary(results, out_root / "cv_summary.json", emotions, run=run)
         _cleanup_trainer_artifacts(fold_dir)
-        print(f"binary fold {fold} done in {elapsed:.1f}s macro_f1={metrics['macro_f1']:.4f}")
+        print(f"binary fold {fold} done in {elapsed:.1f}s macro_f1={metrics['macro_f1']:.4f} imbalance={method}")
 
-    return summary
+    return results
 
 
 def _write_cv_summary(

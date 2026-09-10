@@ -109,5 +109,17 @@
     "target": 203,
     "human_pos": 24,
     "output": "/home/quim-motger/EmotionClassification/Datasets/generated/claude/few_shot_guidelines_dataset/generated_claude_fear_reviews_few_shot_guidelines_dataset.csv"
-  }
+  },
+  "finished_at": "2026-08-02T21:23:33.638545+00:00",
+  "status": "completed",
+  "usage_totals": {
+    "prompt_tokens": 8769,
+    "completion_tokens": 27374,
+    "total_tokens": 36143,
+    "total_latency_ms": 656909.8794669844,
+    "n_llm_calls": 37
+  },
+  "synthetic": 347,
+  "target": 371,
+  "reason": "already_at_target"
 }

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import Any
@@ -104,6 +105,44 @@ def encoder_hub_id(cfg: dict[str, Any], encoder_key: str) -> str:
         # Allow raw Hugging Face ids
         return encoder_key
     return encoders[encoder_key]["hub_id"]
+
+
+def encoder_training_overrides(cfg: dict[str, Any], encoder_key: str) -> dict[str, Any]:
+    """Per-encoder training hyperparameter overrides, tuned result first.
+
+    Two sources, in priority order:
+
+    1. ``outputs/tuning/<encoder>/learning_rate.json`` -- written by
+       ``emotion-cls tune-encoder``, an empirical result from a real grid
+       search against a held-out slice. Wins when present.
+    2. ``training_overrides`` in configs/models.yaml -- a static, manually
+       set fallback (e.g. DeBERTa-v3 needs a much lower learning rate than
+       BERT/RoBERTa/XLNet just to avoid converging to a trivial
+       majority-class prediction; see the ``deberta-v3-*`` catalogue
+       entries).
+
+    Falls back to ``{}`` (no overrides) if neither source has anything for
+    this encoder.
+    """
+    overrides: dict[str, Any] = {}
+    encoders = cfg.get("_models", {}).get("encoders", {})
+    spec = encoders.get(encoder_key, {})
+    overrides.update(spec.get("training_overrides") or {})
+
+    tuning_path = (
+        resolve_path(cfg.get("project", {}).get("output_dir", "outputs"))
+        / "tuning"
+        / encoder_key
+        / "learning_rate.json"
+    )
+    if tuning_path.exists():
+        try:
+            tuned = json.loads(tuning_path.read_text(encoding="utf-8"))
+            if "best_learning_rate" in tuned:
+                overrides["learning_rate"] = tuned["best_learning_rate"]
+        except (json.JSONDecodeError, OSError):
+            pass
+    return overrides
 
 
 def decoder_spec(cfg: dict[str, Any], decoder_key: str) -> dict[str, Any]:

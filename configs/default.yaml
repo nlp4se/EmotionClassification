@@ -55,10 +55,29 @@ training:
   eval_batch_size: 16
   max_length: 512
   weight_decay: 0.01
-  warmup_ratio: 0.0
+  warmup_ratio: 0.1
+  adam_epsilon: 1.0e-6
   gradient_accumulation_steps: 1
   fp16: false
   early_stopping_patience: 2
+
+# Per-encoder learning-rate search (`emotion-cls tune-encoder`), motivated by
+# DeBERTa-v3 needing a non-default LR just to avoid a training collapse: if
+# one architecture needed that, others may be quietly under-tuned at the
+# shared default too. holdout_n_splits/holdout_seed fix a ~14% stratified
+# slice (via data.dataset.tuning_holdout_mask) that tune-encoder scores
+# candidates against and that the real 10-fold CV then excludes -- so a
+# learning rate can never be picked based on the same rows it's later
+# evaluated on.
+tuning:
+  enabled: true
+  holdout_n_splits: 7
+  holdout_seed: 43
+  # Extended from an initial [1e-6..3e-5] grid after 4/9 encoders' best score
+  # was still rising at the 3e-5 edge (bert-base-cased, bert-large-cased,
+  # distilbert-base-cased, roberta-base) -- the boundary was clipping their
+  # true optimum, not finding it.
+  learning_rate_grid: [1.0e-6, 5.0e-6, 1.0e-5, 2.0e-5, 3.0e-5, 5.0e-5, 7.0e-5]
 
 imbalance:
   method: none
@@ -74,6 +93,11 @@ decoding:
   temperature_grid: [0.0, 0.3, 0.7]
   strategy: zero_shot
   few_shot_k: 5
+  # Sentences classified per LLM call (the guidelines block -- the expensive
+  # part of the prompt -- is sent once per batch instead of once per
+  # sentence). Each item carries an explicit id; classify.py validates the
+  # response is a same-length array covering every id before trusting it.
+  batch_size: 10
 
 augmentation:
   embedder: sentence-transformers/all-MiniLM-L6-v2

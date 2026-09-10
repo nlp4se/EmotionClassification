@@ -196,7 +196,7 @@ fi
 phase "7) Decoder classify — proprietary APIs"
 ############################################
 if [[ "$SKIP_API" != "1" ]]; then
-  for dec in gpt-5.3-chat gemini-3-flash claude-opus-4-6 mistral-large-2512; do
+  for dec in gpt-5.3-chat gemini-3-flash claude-haiku-4-5 mistral-large-2512; do
     run_decoder_step "classify-decoder $dec" "$dec" zero_shot \
       "${CLI[@]}" classify-decoder --decoder "$dec" --strategy zero_shot
   done
