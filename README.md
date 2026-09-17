@@ -65,7 +65,7 @@ Encoder fine-tuning uses Hugging Face Transformers (PyTorch). Open-source decode
 
 ## Experiments
 
-Default settings (10-fold multilabel stratified CV, top-3 labels, emotion set, hyperparameters) are in `configs/default.yaml`. Override via CLI flags or by editing the YAML files.
+Default settings (10-fold multilabel stratified CV, threshold-based label assignment capped at 3, emotion set, hyperparameters) are in `configs/default.yaml`. Override via CLI flags or by editing the YAML files.
 
 ### Encoder-only classification
 
@@ -74,7 +74,7 @@ Default settings (10-fold multilabel stratified CV, top-3 labels, emotion set, h
 emotion-cls train-encoder --encoder bert-base-cased --head multilabel
 emotion-cls train-encoder --encoder roberta-large --head multilabel
 
-# Binary ensemble (one classifier per emotion; top-3 assembly)
+# Binary ensemble (one classifier per emotion; threshold assembly, capped at 3)
 emotion-cls train-encoder --encoder bert-base-cased --head binary
 ```
 
