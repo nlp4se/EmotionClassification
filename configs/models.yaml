@@ -121,6 +121,18 @@ decoders:
     access: proprietary
     provider: Mistral
     api_key_env: MISTRAL_API_KEY
+  jev-latest:
+    # Not a chat/completion backend -- structured System One classification
+    # via typesafe-sdk (Choice/Score/Noul questions), no free-form JSON
+    # parsing and no temperature parameter. Run via `emotion-cls
+    # classify-typesafe`, a separate additive pipeline
+    # (src/emotion_cls/decoding/typesafe_classify.py), not classify-decoder;
+    # listed here only for catalogue consistency with `list-models`.
+    backend: typesafe
+    model_id: jev-latest
+    access: proprietary
+    provider: TypeSafe AI
+    api_key_env: TYPESAFE_API_KEY
 
 # Generators for RQ4: aliases for the proprietary flagships (must not collide with open-source decoder keys)
 augmentation_generators:

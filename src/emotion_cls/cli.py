@@ -206,6 +206,47 @@ def classify_decoder(
     click.echo(f"Output: {out}")
 
 
+@main.command("classify-typesafe")
+@click.option("--decoder", default="jev-latest", help="Key from configs/models.yaml decoders")
+@click.option(
+    "--strategy",
+    type=click.Choice(["zero_shot", "few_shot_guidelines", "few_shot_guidelines_dataset"]),
+    default=None,
+)
+@click.option("--folds", type=int, default=None)
+@click.option("--dry-run", is_flag=True)
+@click.option("--no-resume", is_flag=True, help="Ignore saved predictions and re-run from scratch")
+@click.pass_context
+def classify_typesafe(
+    ctx: click.Context,
+    decoder: str,
+    strategy: str | None,
+    folds: int | None,
+    dry_run: bool,
+    no_resume: bool,
+) -> None:
+    """RQ2-parallel classification via TypeSafe AI's Jev model (System One).
+
+    Independent of classify-decoder / LLMClient: no temperature parameter
+    (System One's Noul primitive doesn't expose one) and no batching (one
+    sentence per call, matching the other decoders' default batch_size=1).
+    Same folds, same three strategies, same guideline text.
+    """
+    cfg = _apply_overrides(
+        ctx.obj["cfg"],
+        {
+            "decoding.strategy": strategy,
+            "evaluation.n_folds": folds,
+            "experiment.resume": False if no_resume else None,
+        },
+    )
+    from emotion_cls.decoding.typesafe_classify import run_typesafe_classification
+
+    resume = bool(cfg.get("experiment", {}).get("resume", True)) and not no_resume
+    out = run_typesafe_classification(cfg, decoder, dry_run=dry_run, resume=resume)
+    click.echo(f"Output: {out}")
+
+
 @main.command("generate")
 @click.option("--decoder", required=True, help="Generator key from configs/models.yaml")
 @click.option("--emotion", required=True)
