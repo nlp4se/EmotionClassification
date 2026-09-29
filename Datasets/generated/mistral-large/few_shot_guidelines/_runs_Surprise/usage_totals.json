@@ -1,0 +1,8 @@
+{
+  "prompt_tokens": 300,
+  "completion_tokens": 1431,
+  "total_tokens": 1731,
+  "total_latency_ms": 17897.676688153297,
+  "n_llm_calls": 1,
+  "updated_at": "2026-09-29T07:36:21.670821+00:00"
+}

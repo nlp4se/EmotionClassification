@@ -1,9 +1,9 @@
 {
-  "run_id": "28e0ca6a-150e-48a9-82f4-698d4a81c3c6",
-  "name": "generate:mistral-large:few_shot_guidelines_dataset:Joy",
-  "started_at": "2026-08-02T14:24:44.037378+00:00",
+  "run_id": "aa1a99c6-ce33-4c05-8153-85882ba8d8a0",
+  "name": "generate:mistral-large:few_shot_guidelines:Trust",
+  "started_at": "2026-09-29T07:35:30.510628+00:00",
   "repo_root": "/home/quim-motger/EmotionClassification",
-  "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.39",
+  "platform": "Linux-6.8.0-139-generic-x86_64-with-glibc2.39",
   "python": "3.12.3",
   "config": {
     "project": {
@@ -66,9 +66,24 @@
       "max_length": 512,
       "weight_decay": 0.01,
       "warmup_ratio": 0.1,
+      "adam_epsilon": 1e-06,
       "gradient_accumulation_steps": 1,
       "fp16": false,
       "early_stopping_patience": 2
+    },
+    "tuning": {
+      "enabled": true,
+      "holdout_n_splits": 7,
+      "holdout_seed": 43,
+      "learning_rate_grid": [
+        1e-06,
+        5e-06,
+        1e-05,
+        2e-05,
+        3e-05,
+        5e-05,
+        7e-05
+      ]
     },
     "imbalance": {
       "method": "none",
@@ -86,7 +101,8 @@
         0.7
       ],
       "strategy": "zero_shot",
-      "few_shot_k": 5
+      "few_shot_k": 5,
+      "batch_size": 10
     },
     "augmentation": {
       "embedder": "sentence-transformers/all-MiniLM-L6-v2",
@@ -103,23 +119,22 @@
     }
   },
   "extra": {
-    "emotion": "Joy",
+    "emotion": "Trust",
     "decoder": "mistral-large",
-    "strategy": "few_shot_guidelines_dataset",
-    "target": 371,
-    "human_pos": 371,
-    "output": "/home/quim-motger/EmotionClassification/Datasets/generated/mistral-large/few_shot_guidelines_dataset/generated_mistral-large_joy_reviews_few_shot_guidelines_dataset.csv"
+    "strategy": "few_shot_guidelines",
+    "target": 172,
+    "human_pos": 152,
+    "output": "/home/quim-motger/EmotionClassification/Datasets/generated/mistral-large/few_shot_guidelines/generated_mistral-large_trust_reviews_few_shot_guidelines.csv"
   },
-  "finished_at": "2026-09-29T07:32:29.982070+00:00",
+  "finished_at": "2026-09-29T07:35:47.699114+00:00",
   "status": "completed",
   "usage_totals": {
-    "prompt_tokens": 230,
-    "completion_tokens": 1174,
-    "total_tokens": 1404,
-    "total_latency_ms": 16738.34385490045,
+    "prompt_tokens": 731,
+    "completion_tokens": 1304,
+    "total_tokens": 2035,
+    "total_latency_ms": 17184.664600994438,
     "n_llm_calls": 1
   },
-  "reason": "already_at_target",
   "synthetic": 20,
-  "target": 391
+  "target": 172
 }

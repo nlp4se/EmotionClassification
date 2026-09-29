@@ -18,3 +18,4 @@ sentence-transformers>=3.0
 
 # Optional proprietary Gemini SDK (HTTP client also works without it)
 # google-genai>=1.0
+typesafe-sdk
